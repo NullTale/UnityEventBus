@@ -1,0 +1,17 @@
+{
+  "name": "www.nulltale.eventsystem",
+  "displayName": "Unity Event Bus",
+  "version": "1.0.0",
+  "unity": "2020.1",
+  "description": "Unity Event System",
+  "author": {
+    "name": "NullTale",
+    "email": "n12holwingshame@gmail.com",
+    "url": "https://twitter.com/nulltale"
+  },
+  "documentationUrl": "https://github.com/NullTale/UnityEventBus",
+  "type": "library",
+  "license" : "MIT",
+  "dependencies": {},
+  "hideInEditor": false
+}
