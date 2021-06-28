@@ -26,19 +26,19 @@ public class SimpleListener : MonoBehaviour, IListener<string>
     {
         // somewhere in code...
         // send string event to the global bus
-        EventSystem.Send<string>("String event");
+        GlobalBus.Send<string>("String event");
     }
 
     // subscribe to the global bus
     private void OnEnable()
     {
-        EventSystem.Subscribe(this);
+        GlobalBus.Subscribe(this);
     }
 
     // unsubscribe from the global bus
     private void OnDisable()
     {
-        EventSystem.UnSubscribe(this);
+        GlobalBus.UnSubscribe(this);
     }
 
     // react on event
@@ -113,12 +113,12 @@ public class Unit : EventBusBase
     // subscribe to the global bus for example
     private void OnEnable()
     {
-        EventSystem.Subscribe(this);
+        GlobalBus.Subscribe(this);
     }
 
     private void OnDisable()
     {
-        EventSystem.UnSubscribe(this);
+        GlobalBus.UnSubscribe(this);
     }
 }
 ```
@@ -243,7 +243,7 @@ public class Trigger : MonoBehaviour, IActivatable
     public void Activate()
     {
         // call IActivatable version of send to trigger IActivatable listeners
-        EventSystem.Send<IActivatable>(this);
+        GlobalBus.Send<IActivatable>(this);
     }
 }
 

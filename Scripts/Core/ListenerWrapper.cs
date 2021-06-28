@@ -6,7 +6,7 @@ namespace UnityEventBus
     /// <summary>
     /// Listener container, helper class
     /// </summary>
-    public class ListenerWrapper
+    public sealed class ListenerWrapper
     {
         private static readonly DefaultOptions             k_DefaultOptions = new DefaultOptions();
         public static readonly  IComparer<ListenerWrapper> k_OrderComparer  = new OrderComparer();
@@ -14,11 +14,11 @@ namespace UnityEventBus
         private readonly IListenerBase    m_Listener;
         private readonly IListenerOptions m_Options;
 
-        internal bool             IsActive;
-        public Type               KeyType       { get; }
-        public IListenerBase      Listener => m_Listener;
-        public string             Name          => m_Options.Name;
-        public int                Order         => m_Options.Priority;
+        internal bool          IsActive;
+        public   Type          KeyType  { get; }
+        public   IListenerBase Listener => m_Listener;
+        public   string        Name     => m_Options.Name;
+        public   int           Order    => m_Options.Priority;
 
         //////////////////////////////////////////////////////////////////////////
         private class DefaultOptions : IListenerOptions

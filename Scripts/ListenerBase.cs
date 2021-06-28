@@ -93,8 +93,8 @@ namespace UnityEventBus
         private void _buildSubscriptionList()
         {
             // EventSystem singleton
-            if (m_SubscribeTo.HasFlag(SubscriptionTarget.Global) && ReferenceEquals(EventSystem.Instance, null) == false)
-                m_Buses.Add(EventSystem.Instance);
+            if (m_SubscribeTo.HasFlag(SubscriptionTarget.Global) && ReferenceEquals(GlobalBus.Instance, null) == false)
+                m_Buses.Add(GlobalBus.Instance);
 
             // first parent EventBus
             if (m_SubscribeTo.HasFlag(SubscriptionTarget.FirstParent) && ReferenceEquals(transform.parent, null) == false)

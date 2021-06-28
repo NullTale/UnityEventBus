@@ -27,8 +27,8 @@ namespace UnityEventBus
         {
             m_Subscriptions = new List<IEventBus>();
 
-            if (m_SubscribeTo.HasFlag(SubscriptionTarget.Global) && EventSystem.Instance != null)
-                m_Subscriptions.Add(EventSystem.Instance);
+            if (m_SubscribeTo.HasFlag(SubscriptionTarget.Global) && GlobalBus.Instance != null)
+                m_Subscriptions.Add(GlobalBus.Instance);
 
             if (m_SubscribeTo.HasFlag(SubscriptionTarget.FirstParent) && transform.parent != null)
             {

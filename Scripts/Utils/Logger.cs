@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace UnityEventBus
+namespace UnityEventBus.Utils
 {
     public class Logger : EventBus
     {

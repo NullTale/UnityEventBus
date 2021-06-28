@@ -60,6 +60,7 @@ namespace UnityEventBus
         /*
         public static void SendDynamic(this IEventBus Bus, object key)
         {
+            // cache created methods
             SendMethod.MakeGenericMethod(key.GetType()).Invoke(Bus, new []{ key });
         }
 

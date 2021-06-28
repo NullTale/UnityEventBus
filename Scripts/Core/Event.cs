@@ -43,7 +43,7 @@ namespace UnityEventBus
 
         //////////////////////////////////////////////////////////////////////////
         public EventData(in K key, in D data) 
-            : base(key)
+            : base(in key)
         {
             Data = data;
         }

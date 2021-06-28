@@ -20,7 +20,7 @@ namespace UnityEventBus
 
         //////////////////////////////////////////////////////////////////////////
         public void Send<T>(in T e)
-	    {
+        {
             // propagate, invoke listeners
             if (m_Listeners.TryGetValue(typeof(IListener<T>), out var set))
             {
@@ -49,8 +49,8 @@ namespace UnityEventBus
         }
 
         public void Subscribe(ListenerWrapper listener)
-	    {
-            if (listener == null) 
+        {
+            if (listener == null)
                 throw new ArgumentNullException(nameof(listener));
 
             // activate
@@ -65,11 +65,11 @@ namespace UnityEventBus
 
             if (set.Contains(listener) == false)
                 set.Add(listener);
-	    }
+        }
 
         public void UnSubscribe(ListenerWrapper listener)
         {
-            if (listener == null) 
+            if (listener == null)
                 throw new ArgumentNullException(nameof(listener));
 
             // deactivate
@@ -86,7 +86,7 @@ namespace UnityEventBus
 
         public void Subscribe(IEventBus bus)
         {
-            if (bus == null) 
+            if (bus == null)
                 throw new ArgumentNullException(nameof(bus));
 
             m_Buses.Add(bus);
@@ -94,7 +94,7 @@ namespace UnityEventBus
 
         public void UnSubscribe(IEventBus bus)
         {
-            if (bus == null) 
+            if (bus == null)
                 throw new ArgumentNullException(nameof(bus));
 
             m_Buses.Remove(bus);
@@ -113,12 +113,12 @@ namespace UnityEventBus
     {
         private SortedCollection<ListenerWrapper> m_Listeners = new SortedCollection<ListenerWrapper>(ListenerWrapper.k_OrderComparer);
 
-        private HashSet<IEventBus<T>>  m_Buses = new HashSet<IEventBus<T>>();
-        private HashSet<IEventBus>     m_GenericBuses = new HashSet<IEventBus>();
+        private HashSet<IEventBus<T>> m_Buses        = new HashSet<IEventBus<T>>();
+        private HashSet<IEventBus>    m_GenericBuses = new HashSet<IEventBus>();
 
         //////////////////////////////////////////////////////////////////////////
         public void Send(in T e)
-	    {
+        {
             // invoke listeners
             foreach (var listenerWrapper in m_Listeners.ToArray())
             {
@@ -140,6 +140,7 @@ namespace UnityEventBus
                     bus.Send(in e);
                 }
             }
+
             if (m_GenericBuses.Count != 0)
             {
                 foreach (var bus in m_GenericBuses.ToArray())
@@ -150,18 +151,18 @@ namespace UnityEventBus
         }
 
         public void Subscribe(ListenerWrapper listener)
-	    {
-            if (listener == null) 
+        {
+            if (listener == null)
                 throw new ArgumentNullException(nameof(listener));
 
             // activate
             listener.IsActive = true;
             m_Listeners.Add(listener);
-	    }
+        }
 
         public void UnSubscribe(ListenerWrapper listener)
         {
-            if (listener == null) 
+            if (listener == null)
                 throw new ArgumentNullException(nameof(listener));
 
             // deactivate, must be deactivated in case of execution
@@ -171,7 +172,7 @@ namespace UnityEventBus
 
         public void Subscribe(IEventBus<T> bus)
         {
-            if (bus == null) 
+            if (bus == null)
                 throw new ArgumentNullException(nameof(bus));
 
             m_Buses.Add(bus);
@@ -179,7 +180,7 @@ namespace UnityEventBus
 
         public void UnSubscribe(IEventBus<T> bus)
         {
-            if (bus == null) 
+            if (bus == null)
                 throw new ArgumentNullException(nameof(bus));
 
             m_Buses.Remove(bus);
@@ -187,17 +188,17 @@ namespace UnityEventBus
 
         public void Subscribe(IEventBus bus)
         {
-            if (bus == null) 
+            if (bus == null)
                 throw new ArgumentNullException(nameof(bus));
-            
+
             m_GenericBuses.Add(bus);
         }
 
         public void UnSubscribe(IEventBus bus)
         {
-            if (bus == null) 
+            if (bus == null)
                 throw new ArgumentNullException(nameof(bus));
-            
+
             m_GenericBuses.Remove(bus);
         }
 

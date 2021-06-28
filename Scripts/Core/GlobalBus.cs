@@ -10,10 +10,10 @@ namespace UnityEventBus
     /// EventBus singleton
     /// </summary>
     [DefaultExecutionOrder(-100)]
-    public class EventSystem : MonoBehaviour, IEventBus
+    public class GlobalBus : MonoBehaviour, IEventBus
     {
-        private static EventSystem s_Instance;
-        public static EventSystem  Instance
+        private static GlobalBus s_Instance;
+        public static GlobalBus  Instance
         {
             get
             {
@@ -251,10 +251,10 @@ namespace UnityEventBus
             if (s_Instance != null)
                 return;
 
-            var go = new GameObject("EventSystem");
+            var go = new GameObject(nameof(GlobalBus));
             DontDestroyOnLoad(go);
 
-            var es = go.AddComponent<EventSystem>();
+            var es = go.AddComponent<GlobalBus>();
             es.CollectClasses = collectClasses;
             es.CollectFunctions = collectFunctions;
 

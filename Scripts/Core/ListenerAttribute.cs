@@ -11,8 +11,8 @@ namespace UnityEventBus
         /// <summary> Should this method/class be collected </summary>
         public bool Active { get; set; } = true;
         /// <summary> Listener order </summary>
-        public int Order { get; set; } = EventSystem.k_DefaultOrder;
+        public int Order { get; set; } = GlobalBus.k_DefaultOrder;
         /// <summary> Listener name/id, if not set it will be set to the MethodInfo name </summary>
-        public string Name { get; set; } = EventSystem.k_DefaultName;
+        public string Name { get; set; } = GlobalBus.k_DefaultName;
     }
 }
