@@ -75,7 +75,7 @@ public class SimpleListener : Listener<string>
 }
 ```
 
-In the unit editor, you can setup the behavior in detail.
+In the unity editor, you can set up the behavior in detail.
 
 ![Listener](https://user-images.githubusercontent.com/1497430/123495864-1c812f00-d62e-11eb-81a9-0144b56529dd.png)
 
@@ -105,7 +105,7 @@ public class Unit : EventBusBase
 }
 ```
 
-Event bus can subscribe to the other buses like a listener
+Event bus can subscribe to the other buses like a listener.
 
 ```c#
 public class Unit : EventBusBase
