@@ -3,9 +3,9 @@ using System.Linq;
 namespace UnityEventBus
 {
     /// <summary> Base event helper class </summary>
-    public interface IEventBase {}
+    public interface IEventBase { }
 
-    /// <summary> Event with key data </summary>
+    /// <summary> Event with key only </summary>
     /// <typeparam name="T"> Type of event key </typeparam>
     public interface IEvent<out T> : IEventBase
     {
@@ -24,7 +24,7 @@ namespace UnityEventBus
     {
         public T    Key { get; }
 
-        //////////////////////////////////////////////////////////////////////////
+        // =======================================================================
         public Event(in T key)
         {
             Key = key;
@@ -41,7 +41,7 @@ namespace UnityEventBus
     {
         public D Data { get; }
 
-        //////////////////////////////////////////////////////////////////////////
+        // =======================================================================
         public EventData(in K key, in D data) 
             : base(in key)
         {

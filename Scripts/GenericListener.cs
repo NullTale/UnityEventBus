@@ -14,7 +14,7 @@ namespace UnityEventBus
         private List<IEventBus> m_Subscriptions = new List<IEventBus>(1);
         private Action<T>       m_Reaction;
 
-        //////////////////////////////////////////////////////////////////////////
+        // =======================================================================
         public GenericListener(Action<T> reaction, int order, string name)
         {
             m_Reaction = reaction;

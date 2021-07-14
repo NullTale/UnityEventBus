@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace UnityEventBus
 {
@@ -20,7 +21,7 @@ namespace UnityEventBus
         public   string        Name     => m_Options.Name;
         public   int           Order    => m_Options.Priority;
 
-        //////////////////////////////////////////////////////////////////////////
+        // =======================================================================
         private class DefaultOptions : IListenerOptions
         {
             public string Name     => string.Empty;
@@ -29,13 +30,15 @@ namespace UnityEventBus
         
         private sealed class OrderComparer : IComparer<ListenerWrapper>
         {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public int Compare(ListenerWrapper x, ListenerWrapper y)
             {
                 return x.Order - y.Order;
             }
         }
 
-        //////////////////////////////////////////////////////////////////////////
+        // =======================================================================
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ListenerWrapper(IListenerBase listener, Type type)
         {
             m_Listener = listener;
@@ -43,6 +46,7 @@ namespace UnityEventBus
             KeyType    = type;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override bool Equals(object obj)
         {
             //if (ReferenceEquals(null, obj)) return false;
@@ -50,22 +54,18 @@ namespace UnityEventBus
             return m_Listener == ((ListenerWrapper)obj).Listener;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override int GetHashCode()
         {
             return (m_Listener != null ? m_Listener.GetHashCode() : 0);
         }
-        
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void React<T>(in T e)
         {
             // listener can be removed through execution
             if (IsActive)
                 ((IListener<T>)m_Listener).React(e);
-        }
-
-        public void InvokeAction<T>(in Action<T> e) where T : IListenerBase
-        {
-            if (IsActive)
-                e.Invoke((T)m_Listener);
         }
     }
 }

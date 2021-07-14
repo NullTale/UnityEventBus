@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using UnityEventBus.Utils;
 using UnityEngine;
 
@@ -15,10 +16,10 @@ namespace UnityEventBus
         private const int k_DefaultSetSize = 1;
 
         private Dictionary<Type, SortedCollection<ListenerWrapper>> m_Listeners = new Dictionary<Type, SortedCollection<ListenerWrapper>>();
+        private HashSet<IEventBus>                                  m_Buses     = new HashSet<IEventBus>();
 
-        private HashSet<IEventBus> m_Buses = new HashSet<IEventBus>();
-
-        //////////////////////////////////////////////////////////////////////////
+        // =======================================================================
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Send<T>(in T e)
         {
             // propagate, invoke listeners
@@ -48,6 +49,7 @@ namespace UnityEventBus
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Subscribe(ListenerWrapper listener)
         {
             if (listener == null)
@@ -67,6 +69,7 @@ namespace UnityEventBus
                 set.Add(listener);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void UnSubscribe(ListenerWrapper listener)
         {
             if (listener == null)
@@ -84,6 +87,7 @@ namespace UnityEventBus
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Subscribe(IEventBus bus)
         {
             if (bus == null)
@@ -92,6 +96,7 @@ namespace UnityEventBus
             m_Buses.Add(bus);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void UnSubscribe(IEventBus bus)
         {
             if (bus == null)
@@ -100,6 +105,7 @@ namespace UnityEventBus
             m_Buses.Remove(bus);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IEnumerable<ListenerWrapper> GetListeners()
         {
             return m_Listeners.SelectMany(group => group.Value);
@@ -111,12 +117,12 @@ namespace UnityEventBus
     /// </summary>
     public class EventBusImpl<T> : IEventBusImpl<T>
     {
-        private SortedCollection<ListenerWrapper> m_Listeners = new SortedCollection<ListenerWrapper>(ListenerWrapper.k_OrderComparer);
+        private SortedCollection<ListenerWrapper> m_Listeners    = new SortedCollection<ListenerWrapper>(ListenerWrapper.k_OrderComparer);
+        private HashSet<IEventBus<T>>             m_Buses        = new HashSet<IEventBus<T>>();
+        private HashSet<IEventBus>                m_GenericBuses = new HashSet<IEventBus>();
 
-        private HashSet<IEventBus<T>> m_Buses        = new HashSet<IEventBus<T>>();
-        private HashSet<IEventBus>    m_GenericBuses = new HashSet<IEventBus>();
-
-        //////////////////////////////////////////////////////////////////////////
+        // =======================================================================
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Send(in T e)
         {
             // invoke listeners
@@ -150,6 +156,7 @@ namespace UnityEventBus
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Subscribe(ListenerWrapper listener)
         {
             if (listener == null)
@@ -160,6 +167,7 @@ namespace UnityEventBus
             m_Listeners.Add(listener);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void UnSubscribe(ListenerWrapper listener)
         {
             if (listener == null)
@@ -170,6 +178,7 @@ namespace UnityEventBus
             m_Listeners.Remove(listener);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Subscribe(IEventBus<T> bus)
         {
             if (bus == null)
@@ -178,6 +187,7 @@ namespace UnityEventBus
             m_Buses.Add(bus);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void UnSubscribe(IEventBus<T> bus)
         {
             if (bus == null)
@@ -186,6 +196,7 @@ namespace UnityEventBus
             m_Buses.Remove(bus);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Subscribe(IEventBus bus)
         {
             if (bus == null)
@@ -194,6 +205,7 @@ namespace UnityEventBus
             m_GenericBuses.Add(bus);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void UnSubscribe(IEventBus bus)
         {
             if (bus == null)
@@ -202,6 +214,7 @@ namespace UnityEventBus
             m_GenericBuses.Remove(bus);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IEnumerable<ListenerWrapper> GetListeners()
         {
             return m_Listeners;

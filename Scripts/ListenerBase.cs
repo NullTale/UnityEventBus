@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 namespace UnityEventBus
@@ -35,12 +36,12 @@ namespace UnityEventBus
             }
         }
 
-        //////////////////////////////////////////////////////////////////////////
+        // =======================================================================
         [Serializable] [Flags]
         private enum SubscriptionTarget
         {
             None = 0,
-            /// <summary> EventSystem singleton </summary>
+            /// <summary> EventBus singleton </summary>
             Global = 1,
             /// <summary> First parent EventBus </summary>
             FirstParent = 1 << 1,
@@ -48,7 +49,7 @@ namespace UnityEventBus
             This = 1 << 2,
         }
 
-        //////////////////////////////////////////////////////////////////////////
+        // =======================================================================
         protected virtual void Awake()
         {
             _buildSubscriptionList();
@@ -65,7 +66,8 @@ namespace UnityEventBus
             _disconnectListener();
         }
 
-        //////////////////////////////////////////////////////////////////////////
+        // =======================================================================
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void _connectListener()
         {
             // connect if disconnected
@@ -78,6 +80,7 @@ namespace UnityEventBus
             m_Connected = true;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void _disconnectListener()
         {
             // disconnect if connected
@@ -90,6 +93,7 @@ namespace UnityEventBus
             m_Connected = false;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void _buildSubscriptionList()
         {
             // EventSystem singleton
@@ -112,6 +116,7 @@ namespace UnityEventBus
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void _reconnect()
         {
             _disconnectListener();

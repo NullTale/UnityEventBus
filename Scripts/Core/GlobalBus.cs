@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using UnityEventBus.Utils;
 using UnityEngine;
 
@@ -142,7 +143,7 @@ namespace UnityEventBus
         public bool CollectFunctions;
         public bool InitOnAwake;
 
-        //////////////////////////////////////////////////////////////////////////
+        // =======================================================================
         private abstract class ListenerActionBase<T> : IListener<T>, IListenerOptions
         {
             protected string            m_Name;
@@ -151,7 +152,7 @@ namespace UnityEventBus
             public string               Name => m_Name;
             public int                  Priority => m_Order;
 
-            //////////////////////////////////////////////////////////////////////////
+            // =======================================================================
             public abstract void React(T e);
             
             protected ListenerActionBase(string name, int order)
@@ -163,12 +164,12 @@ namespace UnityEventBus
 
         private class ListenerStaticFunction<T> : ListenerActionBase<T>
         {
-            private delegate void ProcessDelagate(T e);
-            
-            //////////////////////////////////////////////////////////////////////////
             private ProcessDelagate    m_Action;
             
-            //////////////////////////////////////////////////////////////////////////
+            // =======================================================================
+            private delegate void ProcessDelagate(T e);
+            
+            // =======================================================================
             public override void React(T e)
             {
                 // if key matches invoke action
@@ -187,7 +188,7 @@ namespace UnityEventBus
             }
         }
         
-        //////////////////////////////////////////////////////////////////////////
+        // =======================================================================
         private void Awake()
         {
             if (InitOnAwake)
@@ -218,7 +219,7 @@ namespace UnityEventBus
                 Instance = null;
         }
 
-        //////////////////////////////////////////////////////////////////////////
+        // =======================================================================
         void IEventBus.Send<T>(in T e)
         {
             Send(in e);
@@ -244,7 +245,7 @@ namespace UnityEventBus
             UnSubscribe(bus);
         }
 
-        //////////////////////////////////////////////////////////////////////////
+        // =======================================================================
         /// <summary> Create and initialize EventSystem singleton game object, if singleton already created nothing will happen </summary>
         public static void Create(bool collectClasses, bool collectFunctions)
         {
@@ -261,29 +262,34 @@ namespace UnityEventBus
             es.Init(new EventBusImpl());
         }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Send<T>(in T e)
         { 
             Instance.m_Impl.Send(in e);
         }
         
         /// <summary> Send IEvent message </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void SendEvent<T>(in T e)
         { 
             Instance.m_Impl.Send<IEvent<T>>(new Event<T>(e));
         }
 
         /// <summary> Send IEventData message </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void SendEvent<T, D>(in T key, in D data)
         {
             Instance.m_Impl.Send<IEvent<T>>(new EventData<T, D>(key, data));
         }
 
         /// <summary> Send IEventData message </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void SendEvent<T>(in T key, params object[] data)
         {
             Instance.m_Impl.Send<IEvent<T>>(new EventData<T, object[]>(key, data));
         }
-        
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
 	    public static void Subscribe(IListenerBase listener)
 	    {
             // allow multiply listeners in one
@@ -293,12 +299,14 @@ namespace UnityEventBus
             foreach (var listenerWrapper in listeners)
                 Instance.m_Impl.Subscribe(listenerWrapper);
         }
-	    
+
+	    [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Subscribe(IEventBus bus)
         {
             Instance.m_Impl.Subscribe(bus);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void UnSubscribe(IListenerBase listener)
 	    {
 #if UNITY_EDITOR
@@ -313,6 +321,7 @@ namespace UnityEventBus
 		        Instance.m_Impl.UnSubscribe(listenerWrapper);
 	    }
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void UnSubscribe(IEventBus bus)
         {
 #if UNITY_EDITOR
@@ -322,14 +331,14 @@ namespace UnityEventBus
             Instance.m_Impl.UnSubscribe(bus);
         }
         
-        //////////////////////////////////////////////////////////////////////////
+        // =======================================================================
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void _domainReloadCapability()
         {
             s_Instance = null;
         }
 
-        //////////////////////////////////////////////////////////////////////////
+        // =======================================================================
         [ContextMenu("Log listeners")]
         public void LogListeners()
         {

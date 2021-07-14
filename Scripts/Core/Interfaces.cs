@@ -42,7 +42,7 @@ namespace UnityEventBus
     {
         /// <summary> Listener id, used in logs </summary>
         string      Name { get; }
-        /// <summary> Order in listeners queue, same order listeners will be added at the back of the ordered stack </summary>
+        /// <summary> Order in listeners queue, lower first, same order listeners will be added at the back of the ordered stack </summary>
         int         Priority { get; }
     }
     

@@ -4,25 +4,28 @@ using UnityEngine;
 
 namespace UnityEventBus
 {
+    /// <summary>
+    /// MonoBehaviour event bus this auto subscription logic, if implements the IListener interface, subscribes it to itself
+    /// </summary>
     public class EventBus : EventBusBase
     {
         [SerializeField]
         private SubscriptionTarget m_SubscribeTo;
 
-        private List<IEventBus>     m_Subscriptions;
+        private List<IEventBus>    m_Subscriptions;
 
-        //////////////////////////////////////////////////////////////////////////
+        // =======================================================================
         [Serializable] [Flags]
         private enum SubscriptionTarget
         {
             None = 0,
-            /// <summary> EventSystem singleton </summary>
+            /// <summary> EventBus singleton </summary>
             Global = 1,
             /// <summary> First parent EventBus </summary>
             FirstParent = 1 << 1,
         }
 
-        //////////////////////////////////////////////////////////////////////////
+        // =======================================================================
         protected virtual void Awake()
         {
             m_Subscriptions = new List<IEventBus>();
@@ -57,7 +60,7 @@ namespace UnityEventBus
                 bus.UnSubscribe(this);
         }
 
-        //////////////////////////////////////////////////////////////////////////
+        // =======================================================================
         [ContextMenu("Log listeners", false, 0)]
         public void LogListeners()
         {
