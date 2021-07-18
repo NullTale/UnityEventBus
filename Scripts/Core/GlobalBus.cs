@@ -262,34 +262,29 @@ namespace UnityEventBus
             es.Init(new EventBusImpl());
         }
         
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Send<T>(in T e)
         { 
             Instance.m_Impl.Send(in e);
         }
         
         /// <summary> Send IEvent message </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void SendEvent<T>(in T e)
         { 
             Instance.m_Impl.Send<IEvent<T>>(new Event<T>(e));
         }
 
         /// <summary> Send IEventData message </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void SendEvent<T, D>(in T key, in D data)
         {
             Instance.m_Impl.Send<IEvent<T>>(new EventData<T, D>(key, data));
         }
 
         /// <summary> Send IEventData message </summary>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void SendEvent<T>(in T key, params object[] data)
         {
             Instance.m_Impl.Send<IEvent<T>>(new EventData<T, object[]>(key, data));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
 	    public static void Subscribe(IListenerBase listener)
 	    {
             // allow multiply listeners in one
@@ -300,13 +295,11 @@ namespace UnityEventBus
                 Instance.m_Impl.Subscribe(listenerWrapper);
         }
 
-	    [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Subscribe(IEventBus bus)
         {
             Instance.m_Impl.Subscribe(bus);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void UnSubscribe(IListenerBase listener)
 	    {
 #if UNITY_EDITOR
@@ -321,7 +314,6 @@ namespace UnityEventBus
 		        Instance.m_Impl.UnSubscribe(listenerWrapper);
 	    }
         
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void UnSubscribe(IEventBus bus)
         {
 #if UNITY_EDITOR

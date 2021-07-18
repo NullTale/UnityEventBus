@@ -13,14 +13,12 @@ namespace UnityEventBus
         internal static MethodInfo                   SendMethod          = typeof(IEventBus).GetMethod(nameof(IEventBusImpl.Send), BindingFlags.Instance | BindingFlags.Public);
 
         // =======================================================================
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T GetData<T>(this IEventBase e)
         {
             // try get data
             return ((IEventData<T>)e).Data;
         }
         
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool TryGetData<T>(this IEventBase e, out T data)
         {
             // try get data
@@ -34,43 +32,36 @@ namespace UnityEventBus
             return false;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void SendEvent<T>(this IListener<IEvent<T>> receiver, in T key)
         {
             receiver.React(new Event<T>(in key));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void SendEvent<T, D>(this IListener<IEvent<T>> receiver, in T key, in D data)
         {
             receiver.React(new EventData<T, D>(in key, in data));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void SendEvent<T>(this IEventBus Bus, in T key)
         {
             Bus.Send<IEvent<T>>(new Event<T>(in key));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void SendEvent<T, D>(this IEventBus Bus, in T key, in D data)
         {
             Bus.Send<IEvent<T>>(new EventData<T, D>(in key, in data));
         }
         
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void SendEvent<T>(this IEventBus Bus, in T key, params object[] data)
         {
             Bus.Send<IEvent<T>>(new EventData<T, object[]>(in key, in data));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static ListenerWrapper ExtractWrapper<T>(this IListener<T> listener)
         {
             return new ListenerWrapper(listener, typeof(IListener<T>));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static IEnumerable<ListenerWrapper> ExtractWrappers(this IListenerBase listener)
         {
             var type = listener.GetType();
@@ -148,7 +139,6 @@ namespace UnityEventBus
         #endregion
         
         #region Deconstructors
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static (T1, T2) GetData<T1, T2>(this IEventBase e)
         {
             // try get data
@@ -157,7 +147,6 @@ namespace UnityEventBus
             return ((T1)dataArray[0], (T2)dataArray[1]);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static (T1, T2, T3) GetData<T1, T2, T3>(this IEventBase e)
         {
             // try get data
@@ -166,7 +155,6 @@ namespace UnityEventBus
             return ((T1)dataArray[0], (T2)dataArray[1], (T3)dataArray[2]);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static (T1, T2, T3, T4) GetData<T1, T2, T3, T4>(this IEventBase e)
         {
             // try get data
@@ -175,7 +163,6 @@ namespace UnityEventBus
             return ((T1)dataArray[0], (T2)dataArray[1], (T3)dataArray[2], (T4)dataArray[3]);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool TryGetData<T1, T2>(this IEventBase e, out T1 dataA, out T2 dataB)
         {
             // safe deconstruction version
@@ -200,7 +187,6 @@ namespace UnityEventBus
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool TryGetData<T1, T2, T3>(this IEventBase e, out T1 dataA, out T2 dataB, out T3 dataC)
         {
             // safe deconstruction version
@@ -228,7 +214,6 @@ namespace UnityEventBus
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool TryGetData<T1, T2, T3, T4>(this IEventBase e, out T1 dataA, out T2 dataB, out T3 dataC, out T4 dataD)
         {
             // safe deconstruction version

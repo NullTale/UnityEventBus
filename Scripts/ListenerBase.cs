@@ -67,7 +67,6 @@ namespace UnityEventBus
         }
 
         // =======================================================================
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void _connectListener()
         {
             // connect if disconnected
@@ -80,7 +79,6 @@ namespace UnityEventBus
             m_Connected = true;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void _disconnectListener()
         {
             // disconnect if connected
@@ -93,7 +91,6 @@ namespace UnityEventBus
             m_Connected = false;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void _buildSubscriptionList()
         {
             // EventSystem singleton
