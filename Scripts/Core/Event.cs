@@ -53,4 +53,38 @@ namespace UnityEventBus
             return $"{Key} {(typeof(D) == typeof(object[]) ? (Data as object[])?.Aggregate("", (s, o) => s + " " + o) : " " + Data)}";
         }
     }
+    
+    public interface IRequest<out T>: IEvent<T>
+    {
+        bool IsApproved { get; }
+
+        void Approve();
+    }
+    
+    internal class EventRequest<T> : Event<T>, IRequest<T>
+    {
+        public  bool   IsApproved { get; private set; }
+
+        // =======================================================================
+        public EventRequest(in T key) : base(in key) { }
+
+        public void Approve()
+        {
+            IsApproved = true;
+        }
+    }
+
+    internal class EventDataRequest<TKey, TData> : EventData<TKey, TData>, IRequest<TKey>
+    {
+        public  bool   IsApproved { get; private set; }
+
+        // =======================================================================
+        public EventDataRequest(in TKey key, in TData data) : base(in key, in data) { }
+
+        public void Approve()
+        {
+            IsApproved = true;
+        }
+    }
+    
 }

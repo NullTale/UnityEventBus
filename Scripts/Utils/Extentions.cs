@@ -42,19 +42,45 @@ namespace UnityEventBus
             receiver.React(new EventData<T, D>(in key, in data));
         }
 
-        public static void SendEvent<T>(this IEventBus Bus, in T key)
+        public static void SendEvent<T>(this IListener<IEvent<T>> receiver, in T key, params object[] data)
         {
-            Bus.Send<IEvent<T>>(new Event<T>(in key));
+            receiver.React(new EventData<T, object[]>(in key, in data));
         }
 
-        public static void SendEvent<T, D>(this IEventBus Bus, in T key, in D data)
+        public static void SendEvent<T>(this IEventBus bus, in T key)
         {
-            Bus.Send<IEvent<T>>(new EventData<T, D>(in key, in data));
+            bus.Send<IEvent<T>>(new Event<T>(in key));
+        }
+
+        public static void SendEvent<T, D>(this IEventBus bus, in T key, in D data)
+        {
+            bus.Send<IEvent<T>>(new EventData<T, D>(in key, in data));
         }
         
-        public static void SendEvent<T>(this IEventBus Bus, in T key, params object[] data)
+        public static void SendEvent<T>(this IEventBus bus, in T key, params object[] data)
         {
-            Bus.Send<IEvent<T>>(new EventData<T, object[]>(in key, in data));
+            bus.Send<IEvent<T>>(new EventData<T, object[]>(in key, in data));
+        }
+        
+        public static bool SendRequest<T>(this IEventBus bus, in T key)
+        {
+            IRequest<T> request = new EventRequest<T>(in key);
+            bus.Send<IRequest<T>>(in request);
+            return request.IsApproved;
+        }
+
+        public static bool SendRequest<T, D>(this IEventBus bus, in T key, in D data)
+        {
+            IRequest<T> request = new EventDataRequest<T, D>(in key, in data);
+            bus.Send<IRequest<T>>(request);
+            return request.IsApproved;
+        }
+
+        public static bool SendRequest<T>(this IEventBus bus, in T key, params object[] data)
+        {
+            IRequest<T> request = new EventDataRequest<T, object[]>(in key, in data);
+            bus.Send<IRequest<T>>(request);
+            return request.IsApproved;
         }
 
         internal static IEnumerable<ListenerWrapper> ExtractWrappers(this IListenerBase listener)
