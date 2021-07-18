@@ -28,6 +28,9 @@ namespace UnityEventBus
                 // set can be modified through execution
                 foreach (var listenerWrapper in set.ToArray())
                 {
+#if  DEBUG
+                    listenerWrapper.React(in e);
+#else
                     try
                     {
                         listenerWrapper.React(in e);
@@ -36,6 +39,7 @@ namespace UnityEventBus
                     {
                         Debug.LogError($"Listener: id: {listenerWrapper.Name}, key: {listenerWrapper.KeyType}; Exception: {exception}");
                     }
+#endif
                 }
             }
 
