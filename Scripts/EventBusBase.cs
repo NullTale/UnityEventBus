@@ -1,3 +1,4 @@
+using System;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 
@@ -8,7 +9,7 @@ namespace UnityEventBus
     /// </summary>
     public abstract class EventBusBase : MonoBehaviour, IEventBus
     {
-        protected EventBusImpl m_Impl = new EventBusImpl();
+        protected IEventBusImpl m_Impl = new EventBusImpl();
 
         // =======================================================================
         public virtual void Send<T>(in T e)
@@ -44,6 +45,12 @@ namespace UnityEventBus
         public void UnSubscribe(IEventBus bus)
         {
             m_Impl.UnSubscribe(bus);
+        }
+
+        protected virtual void OnDestroy()
+        {
+            m_Impl.Dispose();
+            m_Impl = null;
         }
     }
 }

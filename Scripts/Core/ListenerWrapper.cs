@@ -7,16 +7,19 @@ namespace UnityEventBus
     /// <summary>
     /// Listener container, helper class
     /// </summary>
-    public sealed class ListenerWrapper
+    public sealed class ListenerWrapper : IDisposable
     {
+        internal static Stack<ListenerWrapper> s_WrappersPool = new Stack<ListenerWrapper>(512);
+
         private static readonly DefaultOptions             k_DefaultOptions = new DefaultOptions();
         public static readonly  IComparer<ListenerWrapper> k_OrderComparer  = new OrderComparer();
 
-        private readonly IListenerBase    m_Listener;
-        private readonly IListenerOptions m_Options;
+        private IListenerBase    m_Listener;
+        private IListenerOptions m_Options;
+        private Type             m_KeyType;
 
         internal bool          IsActive;
-        public   Type          KeyType  { get; }
+        public   Type          KeyType  => m_KeyType;
         public   IListenerBase Listener => m_Listener;
         public   string        Name     => m_Options.Name;
         public   int           Order    => m_Options.Priority;
@@ -41,23 +44,48 @@ namespace UnityEventBus
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ListenerWrapper(IListenerBase listener, Type type)
         {
+            Setup(listener, type);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Setup(IListenerBase listener, Type type)
+        {
             m_Listener = listener;
             m_Options  = listener as IListenerOptions ?? k_DefaultOptions;
-            KeyType    = type;
+            m_KeyType  = type;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override bool Equals(object obj)
         {
-            //if (ReferenceEquals(null, obj)) return false;
-            //if (ReferenceEquals(this, obj)) return true;
             return m_Listener == ((ListenerWrapper)obj).Listener;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override int GetHashCode()
         {
-            return (m_Listener != null ? m_Listener.GetHashCode() : 0);
+            return m_Listener.GetHashCode();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Dispose()
+        {
+            m_Listener = null;
+            m_Options  = null;
+            s_WrappersPool.Push(this);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ListenerWrapper Create(IListenerBase listener, Type type)
+        {
+            if (s_WrappersPool.Count > 0)
+            {
+                var wrapper = s_WrappersPool.Pop();
+                wrapper.Setup(listener, type);
+                return wrapper;
+            }
+            else
+                return new ListenerWrapper(listener, type);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

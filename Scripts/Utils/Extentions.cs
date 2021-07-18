@@ -9,8 +9,8 @@ namespace UnityEventBus
 {
     public static class Extentions
     {
-        internal static Dictionary<Type, List<Type>> ListenersTypesCache = new Dictionary<Type, List<Type>>();
-        internal static MethodInfo                   SendMethod          = typeof(IEventBus).GetMethod(nameof(IEventBusImpl.Send), BindingFlags.Instance | BindingFlags.Public);
+        internal static Dictionary<Type, Type[]> s_ListenersTypesCache = new Dictionary<Type, Type[]>();
+        internal static MethodInfo               s_SendMethod          = typeof(IEventBus).GetMethod(nameof(IEventBusImpl.Send), BindingFlags.Instance | BindingFlags.Public);
 
         // =======================================================================
         public static T GetData<T>(this IEventBase e)
@@ -57,30 +57,22 @@ namespace UnityEventBus
             Bus.Send<IEvent<T>>(new EventData<T, object[]>(in key, in data));
         }
 
-        internal static ListenerWrapper ExtractWrapper<T>(this IListener<T> listener)
-        {
-            return new ListenerWrapper(listener, typeof(IListener<T>));
-        }
-
         internal static IEnumerable<ListenerWrapper> ExtractWrappers(this IListenerBase listener)
         {
-            var type = listener.GetType();
+            var listenerType = listener.GetType();
 
             // try get cache
-            if (ListenersTypesCache.TryGetValue(type, out var types))
-                return types.Select(n => new ListenerWrapper(listener, n));
+            if (s_ListenersTypesCache.TryGetValue(listenerType, out var types))
+                return types.Select(type => ListenerWrapper.Create(listener, type));
 
             // extract
-            var extractedTypes = type
-                                 .GetInterfaces()
-                                 .Where(it =>
-                                            it.Implements<IListenerBase>() &&
-                                            it != typeof(IListenerBase))
-                                 .ToList();
+            types = listenerType.GetInterfaces()
+                                .Where(it => it.Implements<IListenerBase>() && it != typeof(IListenerBase))
+                                .ToArray();
 
             // add to cache
-            ListenersTypesCache.Add(type, extractedTypes);
-            return extractedTypes.Select(n => new ListenerWrapper(listener, n));
+            s_ListenersTypesCache.Add(listenerType, types);
+            return types.Select(type => ListenerWrapper.Create(listener, type));
         }
 
         #region Questionable

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace UnityEventBus
 {
@@ -14,7 +15,7 @@ namespace UnityEventBus
     }
 
     /// <summary> Implementation </summary>
-    public interface IEventBusImpl
+    public interface IEventBusImpl : IDisposable
     {
         void Send<T>(in T e);
 

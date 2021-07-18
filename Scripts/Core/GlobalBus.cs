@@ -11,7 +11,7 @@ namespace UnityEventBus
     /// EventBus singleton
     /// </summary>
     [DefaultExecutionOrder(-100)]
-    public class GlobalBus : MonoBehaviour, IEventBus
+    public sealed class GlobalBus : MonoBehaviour, IEventBus
     {
         private static GlobalBus s_Instance;
         public static GlobalBus  Instance
@@ -137,7 +137,6 @@ namespace UnityEventBus
         public const string k_DefaultName      = "";
 
         private IEventBusImpl m_Impl;
-        public  IEventBusImpl Impl => m_Impl;
 
         public bool CollectClasses;
         public bool CollectFunctions;
@@ -198,7 +197,7 @@ namespace UnityEventBus
             }
         }
 
-        protected void Init(IEventBusImpl impl)
+        private void Init(IEventBusImpl impl)
         {
             if (s_Instance != null && s_Instance != this)
                 throw new NotSupportedException("Can't initialize EventSystem singleton twice.");
@@ -213,10 +212,16 @@ namespace UnityEventBus
             Instance = this;
         }
 
-        protected void OnDestroy()
+        private void OnDestroy()
         {
             if (s_Instance == this)
                 Instance = null;
+
+            if (m_Impl != null)
+            {
+                m_Impl.Dispose();
+                m_Impl = null;
+            }
         }
 
         // =======================================================================

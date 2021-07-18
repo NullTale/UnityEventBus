@@ -113,7 +113,6 @@ namespace UnityEventBus
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void _reconnect()
         {
             _disconnectListener();

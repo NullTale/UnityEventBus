@@ -85,7 +85,9 @@ namespace UnityEventBus
             // remove first match
             if (m_Listeners.TryGetValue(listener.KeyType, out var set))
             {
-                set.Remove(listener);
+                if (set.Remove(listener))
+                    listener.Dispose();
+
                 if (set.Count == 0)
                     m_Listeners.Remove(listener.KeyType);
             }
@@ -113,6 +115,13 @@ namespace UnityEventBus
         public IEnumerable<ListenerWrapper> GetListeners()
         {
             return m_Listeners.SelectMany(group => group.Value);
+        }
+
+        public void Dispose()
+        {
+            foreach (var wrappers in m_Listeners.Values)
+            foreach (var wrapper in wrappers)
+                wrapper.Dispose();
         }
     }
 }
