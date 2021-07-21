@@ -2,27 +2,26 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using UnityEventBus.Utils;
 
 namespace UnityEventBus
 {
-    public static class Extentions
+    public static class Extensions
     {
         internal static Dictionary<Type, Type[]> s_ListenersTypesCache = new Dictionary<Type, Type[]>();
         internal static MethodInfo               s_SendMethod          = typeof(IEventBus).GetMethod(nameof(IEventBusImpl.Send), BindingFlags.Instance | BindingFlags.Public);
 
         // =======================================================================
-        public static T GetData<T>(this IEventBase e)
+        public static TData GetData<TData>(this IEventBase e)
         {
             // try get data
-            return ((IEventData<T>)e).Data;
+            return ((IEventData<TData>)e).Data;
         }
         
-        public static bool TryGetData<T>(this IEventBase e, out T data)
+        public static bool TryGetData<TData>(this IEventBase e, out TData data)
         {
             // try get data
-            if (e is IEventData<T> eventData)
+            if (e is IEventData<TData> eventData)
             {
                 data = eventData.Data;
                 return true;
@@ -32,54 +31,54 @@ namespace UnityEventBus
             return false;
         }
 
-        public static void SendEvent<T>(this IListener<IEvent<T>> receiver, in T key)
+        public static void SendEvent<TKey>(this IListener<IEvent<TKey>> receiver, in TKey key)
         {
-            receiver.React(new Event<T>(in key));
+            receiver.React(new Event<TKey>(in key));
         }
 
-        public static void SendEvent<T, D>(this IListener<IEvent<T>> receiver, in T key, in D data)
+        public static void SendEvent<TKey, TData>(this IListener<IEvent<TKey>> receiver, in TKey key, in TData data)
         {
-            receiver.React(new EventData<T, D>(in key, in data));
+            receiver.React(new EventData<TKey, TData>(in key, in data));
         }
 
-        public static void SendEvent<T>(this IListener<IEvent<T>> receiver, in T key, params object[] data)
+        public static void SendEvent<TKey>(this IListener<IEvent<TKey>> receiver, in TKey key, params object[] data)
         {
-            receiver.React(new EventData<T, object[]>(in key, in data));
+            receiver.React(new EventData<TKey, object[]>(in key, in data));
         }
 
-        public static void SendEvent<T>(this IEventBus bus, in T key)
+        public static void SendEvent<TKey>(this IEventBus bus, in TKey key)
         {
-            bus.Send<IEvent<T>>(new Event<T>(in key));
+            bus.Send<IEvent<TKey>>(new Event<TKey>(in key));
         }
 
-        public static void SendEvent<T, D>(this IEventBus bus, in T key, in D data)
+        public static void SendEvent<TKey, TData>(this IEventBus bus, in TKey key, in TData data)
         {
-            bus.Send<IEvent<T>>(new EventData<T, D>(in key, in data));
+            bus.Send<IEvent<TKey>>(new EventData<TKey, TData>(in key, in data));
         }
         
-        public static void SendEvent<T>(this IEventBus bus, in T key, params object[] data)
+        public static void SendEvent<TKey>(this IEventBus bus, in TKey key, params object[] data)
         {
-            bus.Send<IEvent<T>>(new EventData<T, object[]>(in key, in data));
+            bus.Send<IEvent<TKey>>(new EventData<TKey, object[]>(in key, in data));
         }
         
-        public static bool SendRequest<T>(this IEventBus bus, in T key)
+        public static bool SendRequest<TKey>(this IEventBus bus, in TKey key)
         {
-            IRequest<T> request = new EventRequest<T>(in key);
-            bus.Send<IRequest<T>>(in request);
+            IRequest<TKey> request = new EventRequest<TKey>(in key);
+            bus.Send<IRequest<TKey>>(in request);
             return request.IsApproved;
         }
 
-        public static bool SendRequest<T, D>(this IEventBus bus, in T key, in D data)
+        public static bool SendRequest<TKey, TData>(this IEventBus bus, in TKey key, in TData data)
         {
-            IRequest<T> request = new EventDataRequest<T, D>(in key, in data);
-            bus.Send<IRequest<T>>(request);
+            IRequest<TKey> request = new EventDataRequest<TKey, TData>(in key, in data);
+            bus.Send<IRequest<TKey>>(request);
             return request.IsApproved;
         }
 
-        public static bool SendRequest<T>(this IEventBus bus, in T key, params object[] data)
+        public static bool SendRequest<TKey>(this IEventBus bus, in TKey key, params object[] data)
         {
-            IRequest<T> request = new EventDataRequest<T, object[]>(in key, in data);
-            bus.Send<IRequest<T>>(request);
+            IRequest<TKey> request = new EventDataRequest<TKey, object[]>(in key, in data);
+            bus.Send<IRequest<TKey>>(request);
             return request.IsApproved;
         }
 
@@ -101,61 +100,6 @@ namespace UnityEventBus
             return types.Select(type => ListenerWrapper.Create(listener, type));
         }
 
-        #region Questionable
-        // rare in use, can cause problems in AOT build
-        /*
-        public static void SendDynamic(this IEventBus Bus, object key)
-        {
-            // cache created methods
-            SendMethod.MakeGenericMethod(key.GetType()).Invoke(Bus, new []{ key });
-        }
-
-        public static void SendEventDynamic(this IEventBus Bus, object key)
-        {
-            try 
-            {
-                var message = Activator.CreateInstance(typeof(Event<>).MakeGenericType(key.GetType()), key);
-                SendMethod.MakeGenericMethod(typeof(IEvent<>).MakeGenericType(key.GetType()))
-                          .Invoke(Bus, new[] { message });
-            }
-            catch (Exception e)
-            {
-                Debug.LogWarning(e);
-            }
-        }
-
-        public static void SendEventDynamic(this IEventBus Bus, object key, object data)
-        {
-            try
-            {
-                var message = Activator.CreateInstance(typeof(EventData<,>).MakeGenericType(key.GetType(), data.GetType()), key,
-                                                       data);
-                SendMethod.MakeGenericMethod(typeof(IEvent<>).MakeGenericType(key.GetType()))
-                          .Invoke(Bus, new[] { message });
-            }
-            catch (Exception e)
-            {
-                Debug.LogWarning(e);
-            }
-        }
-
-        public static void SendEventDynamic(this IEventBus Bus, object key, params object[] data)
-        {
-            try
-            {
-                var message = Activator.CreateInstance(typeof(EventData<,>).MakeGenericType(key.GetType(), data.GetType()), key,
-                                                       data);
-                SendMethod.MakeGenericMethod(typeof(IEvent<>).MakeGenericType(key.GetType()))
-                          .Invoke(Bus, new[] { message });
-            }
-            catch (Exception e)
-            {
-                Debug.LogWarning(e);
-            }
-        }
-        */
-        #endregion
-        
         #region Deconstructors
         public static (T1, T2) GetData<T1, T2>(this IEventBase e)
         {
@@ -262,5 +206,61 @@ namespace UnityEventBus
             }
         }
         #endregion
+
+        #region Questionable
+        // rare in use, can cause problems in AOT build
+        /*
+        public static void SendDynamic(this IEventBus Bus, object key)
+        {
+            // cache created methods
+            SendMethod.MakeGenericMethod(key.GetType()).Invoke(Bus, new []{ key });
+        }
+
+        public static void SendEventDynamic(this IEventBus Bus, object key)
+        {
+            try 
+            {
+                var message = Activator.CreateInstance(typeof(Event<>).MakeGenericType(key.GetType()), key);
+                SendMethod.MakeGenericMethod(typeof(IEvent<>).MakeGenericType(key.GetType()))
+                          .Invoke(Bus, new[] { message });
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning(e);
+            }
+        }
+
+        public static void SendEventDynamic(this IEventBus Bus, object key, object data)
+        {
+            try
+            {
+                var message = Activator.CreateInstance(typeof(EventData<,>).MakeGenericType(key.GetType(), data.GetType()), key,
+                                                       data);
+                SendMethod.MakeGenericMethod(typeof(IEvent<>).MakeGenericType(key.GetType()))
+                          .Invoke(Bus, new[] { message });
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning(e);
+            }
+        }
+
+        public static void SendEventDynamic(this IEventBus Bus, object key, params object[] data)
+        {
+            try
+            {
+                var message = Activator.CreateInstance(typeof(EventData<,>).MakeGenericType(key.GetType(), data.GetType()), key,
+                                                       data);
+                SendMethod.MakeGenericMethod(typeof(IEvent<>).MakeGenericType(key.GetType()))
+                          .Invoke(Bus, new[] { message });
+            }
+            catch (Exception e)
+            {
+                Debug.LogWarning(e);
+            }
+        }
+        */
+        #endregion
+        
     }
 }

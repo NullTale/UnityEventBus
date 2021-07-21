@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using UnityEventBus.Utils;
-using UnityEngine;
 
 
 namespace UnityEventBus
@@ -13,7 +12,7 @@ namespace UnityEventBus
     /// </summary>
     public class EventBusImpl : IEventBusImpl
     {
-        private const int k_DefaultSetSize = 1;
+        private const int k_DefaultSetSize = 4;
 
         private Dictionary<Type, SortedCollection<ListenerWrapper>> m_Listeners = new Dictionary<Type, SortedCollection<ListenerWrapper>>();
         private HashSet<IEventBus>                                  m_Buses     = new HashSet<IEventBus>();
