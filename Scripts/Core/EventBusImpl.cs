@@ -29,11 +29,13 @@ namespace UnityEventBus
                 foreach (var listenerWrapper in set.ToArray())
                 {
 #if  DEBUG
-                    invoker.Invoke(in e, (IListener<TEvent>)listenerWrapper.Listener);
+                    if (listenerWrapper.IsActive)
+                        invoker.Invoke(in e, (IListener<TEvent>)listenerWrapper.Listener);
 #else
                     try
                     {
-                        invoker.Invoke(in e, (IListener<TEvent>)listenerWrapper.Listener);
+                        if (listenerWrapper.IsActive)
+                            invoker.Invoke(in e, (IListener<TEvent>)listenerWrapper.Listener);
                     }
                     catch (Exception exception)
                     {
