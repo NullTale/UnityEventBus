@@ -5,7 +5,7 @@ namespace UnityEventBus
     /// <summary>
     /// EventBus MonoBehaviour class, without auto subscription logic
     /// </summary>
-    public abstract class EventBusBase : MonoBehaviour, IEventBus
+    public class EventBusBase : MonoBehaviour, IEventBus
     {
         protected IEventBusImpl m_Impl = new EventBusImpl();
 

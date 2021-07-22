@@ -8,17 +8,15 @@ namespace UnityEventBus
     public abstract class ListenerBase : MonoBehaviour, IListenerBase, IListenerOptions
     {
         [SerializeField] [Tooltip("Subscription targets")]
-        private SubscriptionTarget m_SubscribeTo;
+        private SubscriptionTarget m_SubscribeTo = SubscriptionTarget.None;
         [SerializeField] [Tooltip("Listener priority, lowest first, same last")]
-        private int             m_Priority;
-        //[SerializeField]  // must be readonly
-        private bool            m_Connected;
-
-        private List<IEventBus> m_Buses = new List<IEventBus>();
+        private int                m_Priority;
+        private bool               m_Connected;
+        private List<IEventBus>    m_Buses = new List<IEventBus>();
 
         public List<IEventBus> Subscriptions => m_Buses;
+        public string          Name          => gameObject.name;
 
-        public string Name => gameObject.name;
         public int Priority
         {
             get => m_Priority;
@@ -35,9 +33,32 @@ namespace UnityEventBus
             }
         }
 
+        public SubscriptionTarget SubscribeTo
+        {
+            get => m_SubscribeTo;
+            set
+            {
+                if (m_SubscribeTo == value)
+                    return;
+
+                m_SubscribeTo = value;
+
+                _buildSubscriptionList();
+
+                if (m_Connected)
+                {
+                    _disconnectListener();
+                    _buildSubscriptionList();
+                    _connectListener();
+                }
+                else
+                    _buildSubscriptionList();
+            }
+        }
+
         // =======================================================================
         [Serializable] [Flags]
-        private enum SubscriptionTarget
+        public enum SubscriptionTarget
         {
             None = 0,
             /// <summary> EventBus singleton </summary>
@@ -92,6 +113,10 @@ namespace UnityEventBus
 
         private void _buildSubscriptionList()
         {
+            m_Buses.Clear();
+            if (m_SubscribeTo == SubscriptionTarget.None)
+                return;
+
             // EventSystem singleton
             if (m_SubscribeTo.HasFlag(SubscriptionTarget.Global) && ReferenceEquals(GlobalBus.Instance, null) == false)
                 m_Buses.Add(GlobalBus.Instance);

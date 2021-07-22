@@ -10,13 +10,13 @@ namespace UnityEventBus
     public class EventBus : EventBusBase
     {
         [SerializeField]
-        private SubscriptionTarget m_SubscribeTo;
-
-        private List<IEventBus>    m_Subscriptions;
+        private SubscriptionTarget m_SubscribeTo = SubscriptionTarget.None;
+        private bool               m_Connected;
+        private List<IEventBus>    m_Subscriptions = new List<IEventBus>();
 
         // =======================================================================
         [Serializable] [Flags]
-        private enum SubscriptionTarget
+        public enum SubscriptionTarget
         {
             None = 0,
             /// <summary> EventBus singleton </summary>
@@ -25,10 +25,81 @@ namespace UnityEventBus
             FirstParent = 1 << 1,
         }
 
+        public SubscriptionTarget SubscribeTo
+        {
+            get => m_SubscribeTo;
+            set
+            {
+                if (m_SubscribeTo == value)
+                    return;
+
+                m_SubscribeTo = value;
+
+                _buildSubscriptionList();
+
+                if (m_Connected)
+                {
+                    _disconnectBus();
+                    _buildSubscriptionList();
+                    _connectBus();
+                }
+                else
+                    _buildSubscriptionList();
+            }
+        }
+
         // =======================================================================
         protected virtual void Awake()
         {
-            m_Subscriptions = new List<IEventBus>();
+            _buildSubscriptionList();
+        }
+
+        protected virtual void OnEnable()
+        {
+            // if implements listener interface manage self
+            if (this is IListenerBase el)
+                Subscribe(el);
+
+            _connectBus();
+        }
+
+        protected virtual void OnDisable()
+        {
+            if (this is IListenerBase el)
+                UnSubscribe(el);
+
+            _disconnectBus();
+        }
+
+        // =======================================================================
+        private void _disconnectBus()
+        {
+            if (m_Connected == false)
+                return;
+
+            m_Connected = false;
+            
+            foreach (var bus in m_Subscriptions)
+                bus.UnSubscribe(this);
+        }
+
+        private void _connectBus()
+        {
+            if (m_Connected)
+                return;
+
+            m_Connected = true;
+            
+            foreach (var bus in m_Subscriptions)
+                bus.Subscribe(this);
+        }
+
+        private void _buildSubscriptionList()
+        {
+            m_Subscriptions.Clear();
+
+            if (m_SubscribeTo == SubscriptionTarget.None)
+                return;
 
             if (m_SubscribeTo.HasFlag(SubscriptionTarget.Global) && GlobalBus.Instance != null)
                 m_Subscriptions.Add(GlobalBus.Instance);
@@ -39,25 +110,6 @@ namespace UnityEventBus
                 if (firstParent != null)
                     m_Subscriptions.Add(firstParent);
             }
-        }
-
-        protected virtual void OnEnable()
-        {
-            // if implements listener interface manage self
-            if (this is IListenerBase el)
-                Subscribe(el);
-
-            foreach (var bus in m_Subscriptions)
-                bus.Subscribe(this);
-        }
-
-        protected virtual void OnDisable()
-        {
-            if (this is IListenerBase el)
-                UnSubscribe(el);
-
-            foreach (var bus in m_Subscriptions)
-                bus.UnSubscribe(this);
         }
 
         // =======================================================================

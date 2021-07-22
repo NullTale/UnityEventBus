@@ -39,9 +39,9 @@ namespace UnityEventBus
     }
 
     /// <summary> Reaction interface </summary>
-    public interface IListener<in T> : IListenerBase 
+    public interface IListener<in TEvent> : IListenerBase 
     {
-        void React(T e);
+        void React(TEvent e);
     }
 
     /// <summary> Provides additional options for event listener </summary>
