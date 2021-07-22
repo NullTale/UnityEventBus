@@ -251,8 +251,6 @@ namespace UnityEventBus
             UnSubscribe(bus);
         }
 
-        public IEnumerable<ListenerWrapper> GetListeners() => m_Impl.GetListeners();
-
         // =======================================================================
         /// <summary> Create and initialize EventSystem singleton game object, if singleton already created nothing will happen </summary>
         public static void Create(bool collectClasses, bool collectFunctions)
@@ -295,7 +293,7 @@ namespace UnityEventBus
         /// <summary> Send IEventData message </summary>
         public static void SendEvent<TKey>(in TKey key, params object[] data)
         {
-            Instance.SendEvent(new EventData<TKey, object[]>(key, data));
+            Instance.SendEvent(key, data);
         }
 
 	    public static void Subscribe(IListenerBase listener)
