@@ -1,4 +1,6 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEventBus.Utils;
@@ -224,9 +226,9 @@ namespace UnityEventBus
         }
 
         // =======================================================================
-        void IEventBus.Send<T>(in T e)
+        void IEventBus.Send<TEvent, TInvoker>(in TEvent e, in TInvoker invoker)
         {
-            Send(in e);
+            Send(in e, in invoker);
         }
 
         void IEventBus.Subscribe(IListenerBase listener)
@@ -249,6 +251,8 @@ namespace UnityEventBus
             UnSubscribe(bus);
         }
 
+        public IEnumerable<ListenerWrapper> GetListeners() => m_Impl.GetListeners();
+
         // =======================================================================
         /// <summary> Create and initialize EventSystem singleton game object, if singleton already created nothing will happen </summary>
         public static void Create(bool collectClasses, bool collectFunctions)
@@ -265,28 +269,33 @@ namespace UnityEventBus
 
             es.Init(new EventBusImpl());
         }
-        
-        public static void Send<T>(in T e)
+
+        public static void Send<TEvent, TInvoker>(in TEvent e, in TInvoker invoker) where TInvoker : IEventInvoker
         { 
-            Instance.m_Impl.Send(in e);
+            Instance.m_Impl.Send(in e, in invoker);
+        }
+        
+        public static void Send<TEvent>(in TEvent e)
+        { 
+            Instance.Send(in e);
         }
         
         /// <summary> Send IEvent message </summary>
-        public static void SendEvent<T>(in T e)
+        public static void SendEvent<TKey>(in TKey key)
         { 
-            Instance.m_Impl.Send<IEvent<T>>(new Event<T>(e));
+            Instance.SendEvent(in key);
         }
 
         /// <summary> Send IEventData message </summary>
-        public static void SendEvent<T, D>(in T key, in D data)
+        public static void SendEvent<TKey, Data>(in TKey key, in Data data)
         {
-            Instance.m_Impl.Send<IEvent<T>>(new EventData<T, D>(key, data));
+            Instance.SendEvent(in key, data);
         }
 
         /// <summary> Send IEventData message </summary>
-        public static void SendEvent<T>(in T key, params object[] data)
+        public static void SendEvent<TKey>(in TKey key, params object[] data)
         {
-            Instance.m_Impl.Send<IEvent<T>>(new EventData<T, object[]>(key, data));
+            Instance.SendEvent(new EventData<TKey, object[]>(key, data));
         }
 
 	    public static void Subscribe(IListenerBase listener)

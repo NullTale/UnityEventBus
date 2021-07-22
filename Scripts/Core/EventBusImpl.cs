@@ -19,20 +19,21 @@ namespace UnityEventBus
 
         // =======================================================================
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Send<T>(in T e)
+        public void Send<TEvent, TInvoker>(in TEvent e, in TInvoker invoker)
+            where TInvoker : IEventInvoker
         {
             // propagate, invoke listeners
-            if (m_Listeners.TryGetValue(typeof(IListener<T>), out var set))
+            if (m_Listeners.TryGetValue(typeof(IListener<TEvent>), out var set))
             {
                 // set can be modified through execution
                 foreach (var listenerWrapper in set.ToArray())
                 {
 #if  DEBUG
-                    listenerWrapper.React(in e);
+                    invoker.Invoke(in e, (IListener<TEvent>)listenerWrapper.Listener);
 #else
                     try
                     {
-                        listenerWrapper.React(in e);
+                        invoker.Invoke(in e, (IListener<TEvent>)listenerWrapper.Listener);
                     }
                     catch (Exception exception)
                     {

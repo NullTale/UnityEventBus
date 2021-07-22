@@ -87,13 +87,5 @@ namespace UnityEventBus
             else
                 return new ListenerWrapper(listener, type);
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void React<T>(in T e)
-        {
-            // listener can be removed through execution
-            if (IsActive)
-                ((IListener<T>)m_Listener).React(e);
-        }
     }
 }

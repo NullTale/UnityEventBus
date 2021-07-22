@@ -10,9 +10,9 @@ namespace UnityEventBus
         protected IEventBusImpl m_Impl = new EventBusImpl();
 
         // =======================================================================
-        public virtual void Send<T>(in T e)
+        public virtual void Send<TEvent, TInvoker>(in TEvent e, in TInvoker invoker) where TInvoker : IEventInvoker
         {
-            m_Impl.Send(in e);
+            m_Impl.Send(in e, in invoker);
         }
 
         public void Subscribe(IListenerBase listener)

@@ -2,14 +2,26 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using UnityEventBus.Utils;
 
 namespace UnityEventBus
 {
     public static class Extensions
     {
-        internal static Dictionary<Type, Type[]> s_ListenersTypesCache = new Dictionary<Type, Type[]>();
-        internal static MethodInfo               s_SendMethod          = typeof(IEventBus).GetMethod(nameof(IEventBusImpl.Send), BindingFlags.Instance | BindingFlags.Public);
+        internal static        Dictionary<Type, Type[]> s_ListenersTypesCache = new Dictionary<Type, Type[]>();
+        internal static        MethodInfo               s_SendMethod          = typeof(IEventBus).GetMethod(nameof(IEventBusImpl.Send), BindingFlags.Instance | BindingFlags.Public);
+        public static readonly IEventInvoker            s_EventInvokerDefault = new EventInvokerDefault();
+
+        // =======================================================================
+        public class EventInvokerDefault : IEventInvoker
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void Invoke<TEvent>(in TEvent e, in IListener<TEvent> listener)
+            {
+                listener.React(e);
+            }
+        }
 
         // =======================================================================
         public static TData GetData<TData>(this IEventBase e)
@@ -44,6 +56,12 @@ namespace UnityEventBus
         public static void SendEvent<TKey>(this IListener<IEvent<TKey>> receiver, in TKey key, params object[] data)
         {
             receiver.React(new EventData<TKey, object[]>(in key, in data));
+        }
+
+
+        public static void Send<TEvent>(this IEventBus bus, in TEvent e)
+        {
+            bus.Send(e, s_EventInvokerDefault);
         }
 
         public static void SendEvent<TKey>(this IEventBus bus, in TKey key)
