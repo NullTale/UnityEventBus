@@ -22,7 +22,6 @@ namespace UnityEventBus
         public   int           Order    => m_Options.Priority;
 
         // =======================================================================
-
         private sealed class OrderComparer : IComparer<ListenerWrapper>
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]

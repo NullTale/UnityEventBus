@@ -62,22 +62,18 @@ namespace UnityEventBus
 
         public static void SendEvent<TKey>(this IListener<IEvent<TKey>> receiver, in TKey key)
         {
-            IEvent<TKey> e = new Event<TKey>(in key);
-            receiver.React(in e);
+            receiver.React(new Event<TKey>(in key));
         }
 
         public static void SendEvent<TKey, TData>(this IListener<IEvent<TKey>> receiver, in TKey key, in TData data)
         {
-            IEvent<TKey> e = new EventData<TKey, TData>(in key, in data);
-            receiver.React(in e);
+            receiver.React(new EventData<TKey, TData>(in key, in data));
         }
 
         public static void SendEvent<TKey>(this IListener<IEvent<TKey>> receiver, in TKey key, params object[] data)
         {
-            IEvent<TKey> e = new EventData<TKey, object[]>(in key, in data);
-            receiver.React(in e);
+            receiver.React(new EventData<TKey, object[]>(in key, in data));
         }
-
 
         public static void Send<TEvent>(this IEventBus bus, in TEvent e)
         {
@@ -86,20 +82,17 @@ namespace UnityEventBus
 
         public static void SendEvent<TKey>(this IEventBus bus, in TKey key)
         {
-            IEvent<TKey> e = new Event<TKey>(in key);
-            bus.Send(in e);
+            bus.Send<IEvent<TKey>>(new Event<TKey>(in key));
         }
 
         public static void SendEvent<TKey, TData>(this IEventBus bus, in TKey key, in TData data)
         {
-            IEvent<TKey> e = new EventData<TKey, TData>(in key, in data);
-            bus.Send(in e);
+            bus.Send<IEvent<TKey>>(new EventData<TKey, TData>(in key, in data));
         }
         
         public static void SendEvent<TKey>(this IEventBus bus, in TKey key, params object[] data)
         {
-            IEvent<TKey> e = new EventData<TKey, object[]>(in key, in data);
-            bus.Send(in e);
+            bus.Send<IEvent<TKey>>(new EventData<TKey, object[]>(in key, in data));
         }
         
         public static bool SendRequest<TKey>(this IEventBus bus, in TKey key)

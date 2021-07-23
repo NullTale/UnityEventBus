@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
@@ -9,20 +10,26 @@ namespace UnityEventBus.Utils
         public  int          Count      => m_Collection.Count;
         public  bool         IsReadOnly => false;
         private List<T>      m_Collection;
-        private IComparer<T> m_OrderComparer;
+        private IComparer<T> m_Comparer;
 
         // =======================================================================
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public SortedCollection(IComparer<T> orderComparer)
+        public SortedCollection(Comparison<T> compare)
         {
             m_Collection = new List<T>();
-            m_OrderComparer   = orderComparer;
+            m_Comparer   = Comparer<T>.Create(compare);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public SortedCollection(IComparer<T> comparer)
+        {
+            m_Collection = new List<T>();
+            m_Comparer   = comparer;
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public SortedCollection(IComparer<T> orderComparer, int size)
+        public SortedCollection(IComparer<T> comparer, int size)
         {
             m_Collection = new List<T>(size);
-            m_OrderComparer   = orderComparer;
+            m_Comparer   = comparer;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -34,7 +41,7 @@ namespace UnityEventBus.Utils
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Add(T item)
         {
-            var index = m_Collection.FindIndex(n => m_OrderComparer.Compare(n, item) > 0);
+            var index = m_Collection.FindIndex(n => m_Comparer.Compare(n, item) > 0);
 
             if (index != -1)
                 m_Collection.Insert(index, item);

@@ -14,12 +14,6 @@ namespace UnityEventBus
         void UnSubscribe(IEventBus bus);
     }
 
-    /// <summary> Invokes events on the listener </summary>
-    public interface IEventInvoker
-    {
-        void Invoke<TEvent>(in TEvent e, in IListenerBase listener);
-    }
-
     /// <summary> Implementation </summary>
     public interface IEventBusImpl : IDisposable
     {
@@ -31,6 +25,12 @@ namespace UnityEventBus
         void UnSubscribe(IEventBus bus);
 
         IEnumerable<ListenerWrapper> GetListeners();
+    }
+
+    /// <summary> Invokes events on the listener </summary>
+    public interface IEventInvoker
+    {
+        void Invoke<TEvent>(in TEvent e, in IListenerBase listener);
     }
 
     /// <summary> Marker interface for event listeners </summary>

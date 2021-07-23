@@ -1,6 +1,4 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEventBus.Utils;
@@ -26,6 +24,7 @@ namespace UnityEventBus
 
                 return s_Instance;
             }
+
             private set
             {
                 if (s_Instance == value)
@@ -36,100 +35,6 @@ namespace UnityEventBus
                 // instance discarded
                 if (s_Instance.IsNull())
                     return;
-
-                // need to parse all assemblies (refactor this?)
-                // not tested with AOT, questionable usefulness, confusional behavior
-                if (Instance.CollectClasses || Instance.CollectFunctions)
-                {
-                    var types = AppDomain.CurrentDomain.GetAssemblies().SelectMany(n => n.GetTypes()).ToArray();
-
-                    // create listener instances
-                    if (Instance.CollectClasses)
-                    {
-                        foreach (var type in types)
-                        {
-                            var attribure = type.GetCustomAttribute<ListenerAttribute>();
-                            // not null & active
-                            if (attribure != null && attribure.Active)
-                            {
-                                // must be creatable class
-                                if (type.IsAbstract || type.IsClass == false || type.IsGenericType)
-                                    continue;
-
-                                // must implement event listener interface
-                                if (typeof(IListenerBase).IsAssignableFrom(type) == false)
-                                    continue;
-
-                                // create & register listener
-                                try
-                                {
-                                    if (typeof(MonoBehaviour).IsAssignableFrom(type))
-                                    {
-                                        // listener is monobehaviour type
-                                        var el = new GameObject(attribure.Name, type).GetComponent(type) as MonoBehaviour;
-                                        el.transform.SetParent(Instance.transform);
-
-                                        Subscribe(el as IListenerBase);
-                                    }
-                                    else
-                                    {
-                                        // listener is class
-                                        var el = (IListenerBase)Activator.CreateInstance(type);
-                                        Subscribe(el);
-                                    }
-                                }
-                                catch (Exception e)
-                                {
-                                    Debug.LogWarning(e);
-                                }
-                            }
-                        }
-                    }
-
-                    // create static function listeners
-                    if (Instance.CollectFunctions)
-                    {
-                        foreach (var type in types)
-                        {
-                            // check all static methods
-                            foreach (var methodInfo in type.GetMethods(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy))
-                            {
-                                try
-                                {
-                                    // must be static
-                                    if (methodInfo.IsStatic == false)
-                                        continue;
-
-                                    // not generic
-                                    if (methodInfo.IsGenericMethod)
-                                        continue;
-
-                                    var attribure = methodInfo.GetCustomAttribute<ListenerAttribute>();
-                                    // not null & active attribute
-                                    if (attribure == null || attribure.Active == false)
-                                        continue;
-
-                                    var args = methodInfo.GetParameters();
-
-                                    // must have input parameter
-                                    if (args.Length != 1)
-                                        continue;
-
-                                    // create & register listener
-                                    var keyType = args[0].ParameterType;
-                                    var el = Activator.CreateInstance(
-                                        typeof(ListenerStaticFunction<>).MakeGenericType(keyType),
-                                        attribure.Name, methodInfo, attribure.Order) as IListenerBase;
-                                    Subscribe(el);
-                                }
-                                catch (Exception e)
-                                {
-                                    Debug.LogWarning(e);
-                                }
-                            }
-                        }
-                    }
-                }
             }
         }
 
@@ -147,18 +52,18 @@ namespace UnityEventBus
         private abstract class ListenerActionBase<T> : IListener<T>, IListenerOptions
         {
             protected string            m_Name;
-            protected int               m_Order;
+            protected int               m_Proprity;
 
             public string               Name => m_Name;
-            public int                  Priority => m_Order;
+            public int                  Priority => m_Proprity;
 
             // =======================================================================
             public abstract void React(in T e);
             
-            protected ListenerActionBase(string name, int order)
+            protected ListenerActionBase(string name, int proprity)
             {
-                m_Name                 = string.IsNullOrEmpty(name) ? Guid.NewGuid().ToString() : name;
-                m_Order                = order;
+                m_Name     = string.IsNullOrEmpty(name) ? Guid.NewGuid().ToString() : name;
+                m_Proprity = proprity;
             }
         }
 
@@ -176,8 +81,8 @@ namespace UnityEventBus
                 m_Action(e);
             }
 
-            public ListenerStaticFunction(string name, MethodInfo method, int order)
-                : base(name, order)
+            public ListenerStaticFunction(string name, MethodInfo method, int proprity)
+                : base(name, proprity)
             {
                 // proceed call
                 m_Action = (ProcessDelagate)Delegate.CreateDelegate(typeof(ProcessDelagate), method);
@@ -211,6 +116,9 @@ namespace UnityEventBus
 
             // set instance
             Instance = this;
+            
+            // parse assembly for listeners
+            _collectAssemblyListeners();
         }
 
         private void OnDestroy()
@@ -339,6 +247,102 @@ namespace UnityEventBus
         private static void _domainReloadCapability()
         {
             s_Instance = null;
+        }
+        
+        private void _collectAssemblyListeners()
+        { 
+            // not tested with AOT, questionable usefulness, confusional behavior
+            if (CollectClasses || CollectFunctions)
+            {
+                var types = AppDomain.CurrentDomain.GetAssemblies().SelectMany(n => n.GetTypes()).ToArray();
+
+                // create listener instances
+                if (CollectClasses)
+                {
+                    foreach (var type in types)
+                    {
+                        var attribure = type.GetCustomAttribute<ListenerAttribute>();
+                        // not null & active
+                        if (attribure != null && attribure.Active)
+                        {
+                            // must be creatable class
+                            if (type.IsAbstract || type.IsClass == false || type.IsGenericType)
+                                continue;
+
+                            // must implement event listener interface
+                            if (typeof(IListenerBase).IsAssignableFrom(type) == false)
+                                continue;
+
+                            // create & register listener
+                            try
+                            {
+                                if (typeof(MonoBehaviour).IsAssignableFrom(type))
+                                {
+                                    // listener is monobehaviour type
+                                    var el = new GameObject(attribure.Name, type).GetComponent(type) as MonoBehaviour;
+                                    el.transform.SetParent(transform);
+
+                                    Subscribe(el as IListenerBase);
+                                }
+                                else
+                                {
+                                    // listener is class
+                                    var el = (IListenerBase)Activator.CreateInstance(type);
+                                    Subscribe(el);
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                Debug.LogWarning(e);
+                            }
+                        }
+                    }
+                }
+
+                // create static function listeners
+                if (CollectFunctions)
+                {
+                    foreach (var type in types)
+                    {
+                        // check all static methods
+                        foreach (var methodInfo in type.GetMethods(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy))
+                        {
+                            try
+                            {
+                                // must be static
+                                if (methodInfo.IsStatic == false)
+                                    continue;
+
+                                // not generic
+                                if (methodInfo.IsGenericMethod)
+                                    continue;
+
+                                var attribure = methodInfo.GetCustomAttribute<ListenerAttribute>();
+                                // not null & active attribute
+                                if (attribure == null || attribure.Active == false)
+                                    continue;
+
+                                var args = methodInfo.GetParameters();
+
+                                // must have input parameter
+                                if (args.Length != 1)
+                                    continue;
+
+                                // create & register listener
+                                var keyType = args[0].ParameterType;
+                                var el = Activator.CreateInstance(
+                                    typeof(ListenerStaticFunction<>).MakeGenericType(keyType),
+                                    attribure.Name, methodInfo, attribure.Order) as IListenerBase;
+                                Subscribe(el);
+                            }
+                            catch (Exception e)
+                            {
+                                Debug.LogWarning(e);
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         // =======================================================================
