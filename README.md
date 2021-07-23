@@ -42,7 +42,7 @@ public class SimpleListener : MonoBehaviour, IListener<string>
     }
 
     // react on event
-    public void React(string e)
+    public void React(in string e)
     {
         Debug.Log(e);
     }
@@ -68,7 +68,7 @@ using UnityEventBus;
 // same as SimpleListener : ListenerBase, IListener<string>
 public class SimpleListener : Listener<string>
 {
-    public override void React(string e)
+    public override void React(in string e)
     {
         Debug.Log(e);
     }
@@ -181,7 +181,7 @@ public class UnitHP : EventListener<UnitEvent>
     public int HP = 2;
 
     // reacts on UnitEvents
-    public override void React(IEvent<UnitEvent> e)
+    public override void React(in IEvent<UnitEvent> e)
     {
         switch (e.Key)
         {
@@ -249,7 +249,7 @@ public class Trigger : MonoBehaviour, IActivatable
 
 public class ActivatableListener : Listener<IActivatable>
 {
-    public override void React(IActivatable e)
+    public override void React(in IActivatable e)
     {
         // do something with e
     }
