@@ -17,7 +17,7 @@ public class Tests
     {
         public string StringIn = string.Empty;
 
-        public void React(string e)
+        public void React(in string e)
         {
             StringIn = e;
         }
@@ -28,8 +28,8 @@ public class Tests
     public void Listener_Subscribe()
     {
         var parentBus = _createBus();
-        var listener = _createListener<SubscribeListener>(parentBus.transform);
-        var thisBus = listener.gameObject.AddComponent<EventBusBase>();
+        var listener  = _createListener<SubscribeListener>(parentBus.transform);
+        var thisBus   = listener.gameObject.AddComponent<EventBusBase>();
 
         listener.SubscribeTo = ListenerBase.SubscriptionTarget.Global;
         _check(GlobalBus.Instance);
@@ -54,33 +54,27 @@ public class Tests
         public int Counter;
     }
 
-    public class OrderListener : ListenerBase,
+    public class PriorityListener : ListenerBase,
                                 IListener<IntRef>
 
     {
         public int      CounterIn;
 
         // =======================================================================
-        public void React(IntRef e)
+        public void React(in IntRef e)
         {
             CounterIn = e.Counter ++;
         }
     }
     
-    [Test]
-    public void Listener_Order()
-    {
-        var listener0 = _createListener<OrderListener>();
-        listener0.Priority = -100;
-        
-        var listener1 = _createListener<OrderListener>();
-        listener1.Priority = 0;
-        
-        var listener2 = _createListener<OrderListener>();
-        listener2.Priority = 0;
 
-        var listener3 = _createListener<OrderListener>();
-        listener3.Priority = 100;
+    [Test]
+    public void Listener_Priority()
+    {
+        var listener0 = _createListener<PriorityListener>(null, -100);
+        var listener1 = _createListener<PriorityListener>(null, 0);
+        var listener2 = _createListener<PriorityListener>(null, 0);
+        var listener3 = _createListener<PriorityListener>(null, 100);
 
         listener1.SubscribeTo = ListenerBase.SubscriptionTarget.Global;
         listener2.SubscribeTo = ListenerBase.SubscriptionTarget.Global;
@@ -110,13 +104,113 @@ public class Tests
         Assert.AreEqual(3, listener0.CounterIn);
     }
 
+    
+    public class GenericListener : ListenerBase,
+                                   IListener<string>
+
+    {
+        public string                  StringIn = string.Empty;
+        public Action<GenericListener> OnReact;
+
+        // =======================================================================
+        public void React(in string e)
+        {
+            StringIn = e;
+            OnReact?.Invoke(this);
+        }
+    }
+    
+    [Test]
+    public void Listener_RuntimeDeactivation()
+    {
+        var listenerA = _createListener<GenericListener>();
+        var listenerB = _createListener<GenericListener>();
+        
+        listenerA.OnReact = gl => listenerB.SubscribeTo = ListenerBase.SubscriptionTarget.None;
+
+        listenerA.SubscribeTo = ListenerBase.SubscriptionTarget.Global;
+        listenerB.SubscribeTo = ListenerBase.SubscriptionTarget.Global;
+
+        GlobalBus.Send(k_ExpectedString);
+
+        Assert.AreEqual(k_ExpectedString, listenerA.StringIn);
+        Assert.AreEqual(string.Empty, listenerB.StringIn);
+    }
+
+    
+    [Test]
+    public void Bus_RuntimeDeactivation()
+    {
+        var busA = _createBus();
+        var busB = _createBus();
+
+        var listenerA = _createListener<GenericListener>(busA.transform);
+        var listenerB = _createListener<GenericListener>(busB.transform);
+
+        listenerA.OnReact = gl => busB.SubscribeTo = EventBus.SubscriptionTarget.None;
+        listenerA.SubscribeTo = ListenerBase.SubscriptionTarget.FirstParent;
+        listenerB.SubscribeTo = ListenerBase.SubscriptionTarget.FirstParent;
+
+        busA.SubscribeTo = EventBus.SubscriptionTarget.Global;
+        busB.SubscribeTo = EventBus.SubscriptionTarget.Global;
+
+        GlobalBus.Send(k_ExpectedString);
+
+        Assert.AreEqual(k_ExpectedString, listenerA.StringIn);
+        Assert.AreEqual(string.Empty, listenerB.StringIn);
+    }
+
+    [Test]
+    public void Bus_Priority()
+    {
+        var bus0 = _createBus(null, -100);
+        var bus1 = _createBus(null, 0);
+        var bus2 = _createBus(null, 0);
+        var bus3 = _createBus(null, 100);
+
+        var listener0 = _createListener<PriorityListener>(bus0.transform, 0, ListenerBase.SubscriptionTarget.FirstParent);
+        var listener1 = _createListener<PriorityListener>(bus1.transform, 0, ListenerBase.SubscriptionTarget.FirstParent);
+        var listener2 = _createListener<PriorityListener>(bus2.transform, 0, ListenerBase.SubscriptionTarget.FirstParent);
+        var listener3 = _createListener<PriorityListener>(bus3.transform, 0, ListenerBase.SubscriptionTarget.FirstParent);
+
+        bus3.SubscribeTo = EventBus.SubscriptionTarget.Global;
+        bus1.SubscribeTo = EventBus.SubscriptionTarget.Global;
+        bus2.SubscribeTo = EventBus.SubscriptionTarget.Global;
+        bus0.SubscribeTo = EventBus.SubscriptionTarget.Global;
+
+        GlobalBus.Send(new IntRef() { Counter = 0 });
+
+        Assert.AreEqual(0, listener0.CounterIn);
+        Assert.AreEqual(1, listener1.CounterIn);
+        Assert.AreEqual(2, listener2.CounterIn);
+        Assert.AreEqual(3, listener3.CounterIn);
+
+        GlobalBus.Send(k_ExpectedString);
+
+        // ===================================
+        // priority resubscribe
+        bus0.Priority = 100;
+
+        // resubscribe in same order
+        bus1.SubscribeTo = EventBus.SubscriptionTarget.None;
+        bus1.SubscribeTo = EventBus.SubscriptionTarget.Global;
+        
+        GlobalBus.Send(new IntRef() { Counter = 0 });
+
+        Assert.AreEqual(0, listener2.CounterIn);
+        Assert.AreEqual(1, listener1.CounterIn);
+        Assert.AreEqual(2, listener3.CounterIn);
+        Assert.AreEqual(3, listener0.CounterIn);
+    }
+
+    
     public class EventListener : ListenerBase, 
                                 IListener<IEvent<string>>
 
     {
         public string StringIn = string.Empty;
         
-        public void React(IEvent<string> e)
+        public void React(in IEvent<string> e)
         {
             switch (e.Key)
             {
@@ -165,15 +259,18 @@ public class Tests
     }
 
     // =======================================================================
-    private EventBus _createBus(Transform root = null)
+    private EventBus _createBus(Transform root = null, int priority = 0)
     {
         var go = new GameObject("Bus");
         go.transform.SetParent(root, false);
 
-        return go.AddComponent<EventBus>();
+        var result = go.AddComponent<EventBus>();
+        result.Priority = priority;
+
+        return result;
     }
 
-    private TListener _createListener<TListener>(Transform root = null, int priority = 0) 
+    private TListener _createListener<TListener>(Transform root = null, int priority = 0, ListenerBase.SubscriptionTarget subscriptionTarget = ListenerBase.SubscriptionTarget.None) 
         where TListener : ListenerBase
     {
         var go = new GameObject("Listener");
@@ -181,6 +278,7 @@ public class Tests
 
         var result = go.AddComponent<TListener>();
         result.Priority = priority;
+        result.SubscribeTo = subscriptionTarget;
 
         return result;
     }
