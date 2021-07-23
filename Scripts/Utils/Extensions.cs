@@ -9,17 +9,34 @@ namespace UnityEventBus
 {
     public static class Extensions
     {
-        internal static        Dictionary<Type, Type[]> s_ListenersTypesCache = new Dictionary<Type, Type[]>();
-        internal static        MethodInfo               s_SendMethod          = typeof(IEventBus).GetMethod(nameof(IEventBusImpl.Send), BindingFlags.Instance | BindingFlags.Public);
-        public static readonly IEventInvoker            s_EventInvokerDefault = new EventInvokerDefault();
+        internal static         Dictionary<Type, Type[]> s_ListenersTypesCache    = new Dictionary<Type, Type[]>();
+        internal static         MethodInfo               s_SendMethod             = typeof(IEventBus).GetMethod(nameof(IEventBusImpl.Send), BindingFlags.Instance | BindingFlags.Public);
+
+        internal static readonly DefaultListenerOptions  s_DefaultListenerOptions = new DefaultListenerOptions();
+
+        public static readonly  DefaultInvoker           s_DefaultInvoker         = new DefaultInvoker();
+        public static readonly  RequestInvoker           s_RequestInvoker         = new RequestInvoker();
+
 
         // =======================================================================
-        public class EventInvokerDefault : IEventInvoker
+        public class DefaultInvoker : IEventInvoker
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public void Invoke<TEvent>(in TEvent e, in IListener<TEvent> listener)
+            public void Invoke<TEvent>(in TEvent e, in IListenerBase listener)
             {
-                listener.React(e);
+                ((IListener<TEvent>)listener).React(in e);
+            }
+        }
+
+        public class RequestInvoker: IEventInvoker
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void Invoke<TEvent>(in TEvent e, in IListenerBase listener)
+            {
+                if (((IRequestBase)e).IsApproved)
+                    return;
+
+                ((IListener<TEvent>)listener).React(in e);
             }
         }
 
@@ -45,58 +62,64 @@ namespace UnityEventBus
 
         public static void SendEvent<TKey>(this IListener<IEvent<TKey>> receiver, in TKey key)
         {
-            receiver.React(new Event<TKey>(in key));
+            IEvent<TKey> e = new Event<TKey>(in key);
+            receiver.React(in e);
         }
 
         public static void SendEvent<TKey, TData>(this IListener<IEvent<TKey>> receiver, in TKey key, in TData data)
         {
-            receiver.React(new EventData<TKey, TData>(in key, in data));
+            IEvent<TKey> e = new EventData<TKey, TData>(in key, in data);
+            receiver.React(in e);
         }
 
         public static void SendEvent<TKey>(this IListener<IEvent<TKey>> receiver, in TKey key, params object[] data)
         {
-            receiver.React(new EventData<TKey, object[]>(in key, in data));
+            IEvent<TKey> e = new EventData<TKey, object[]>(in key, in data);
+            receiver.React(in e);
         }
 
 
         public static void Send<TEvent>(this IEventBus bus, in TEvent e)
         {
-            bus.Send(e, s_EventInvokerDefault);
+            bus.Send(in e, in s_DefaultInvoker);
         }
 
         public static void SendEvent<TKey>(this IEventBus bus, in TKey key)
         {
-            bus.Send<IEvent<TKey>>(new Event<TKey>(in key));
+            IEvent<TKey> e = new Event<TKey>(in key);
+            bus.Send(in e);
         }
 
         public static void SendEvent<TKey, TData>(this IEventBus bus, in TKey key, in TData data)
         {
-            bus.Send<IEvent<TKey>>(new EventData<TKey, TData>(in key, in data));
+            IEvent<TKey> e = new EventData<TKey, TData>(in key, in data);
+            bus.Send(in e);
         }
         
         public static void SendEvent<TKey>(this IEventBus bus, in TKey key, params object[] data)
         {
-            bus.Send<IEvent<TKey>>(new EventData<TKey, object[]>(in key, in data));
+            IEvent<TKey> e = new EventData<TKey, object[]>(in key, in data);
+            bus.Send(in e);
         }
         
         public static bool SendRequest<TKey>(this IEventBus bus, in TKey key)
         {
             IRequest<TKey> request = new EventRequest<TKey>(in key);
-            bus.Send<IRequest<TKey>>(in request);
+            bus.Send(in request, in s_RequestInvoker);
             return request.IsApproved;
         }
 
         public static bool SendRequest<TKey, TData>(this IEventBus bus, in TKey key, in TData data)
         {
             IRequest<TKey> request = new EventDataRequest<TKey, TData>(in key, in data);
-            bus.Send<IRequest<TKey>>(request);
+            bus.Send(in request, in s_RequestInvoker);
             return request.IsApproved;
         }
 
         public static bool SendRequest<TKey>(this IEventBus bus, in TKey key, params object[] data)
         {
             IRequest<TKey> request = new EventDataRequest<TKey, object[]>(in key, in data);
-            bus.Send<IRequest<TKey>>(request);
+            bus.Send(in request, in s_RequestInvoker);
             return request.IsApproved;
         }
 

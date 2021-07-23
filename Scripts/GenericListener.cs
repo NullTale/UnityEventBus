@@ -44,7 +44,7 @@ namespace UnityEventBus
             }
         }
 
-        public void React(T e)
+        public void React(in T e)
         {
             m_Reaction(e);
         }

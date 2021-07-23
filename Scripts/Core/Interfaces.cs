@@ -17,7 +17,7 @@ namespace UnityEventBus
     /// <summary> Invokes events on the listener </summary>
     public interface IEventInvoker
     {
-        void Invoke<TEvent>(in TEvent e, in IListener<TEvent> listener);
+        void Invoke<TEvent>(in TEvent e, in IListenerBase listener);
     }
 
     /// <summary> Implementation </summary>
@@ -39,9 +39,9 @@ namespace UnityEventBus
     }
 
     /// <summary> Reaction interface </summary>
-    public interface IListener<in TEvent> : IListenerBase 
+    public interface IListener<TEvent> : IListenerBase 
     {
-        void React(TEvent e);
+        void React(in TEvent e);
     }
 
     /// <summary> Provides additional options for event listener </summary>

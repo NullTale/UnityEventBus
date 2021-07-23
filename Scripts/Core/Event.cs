@@ -54,14 +54,19 @@ namespace UnityEventBus
         }
     }
     
-    /// <summary>
-    /// Base request class, can be only approved or ignored
-    /// </summary>
-    public interface IRequest<out TKey>: IEvent<TKey>
+    
+    public interface IRequestBase
     {
         bool IsApproved { get; }
 
         void Approve();
+    }
+
+    /// <summary>
+    /// Base request class, can be only approved or ignored
+    /// </summary>
+    public interface IRequest<out TKey>: IRequestBase, IEvent<TKey>
+    {
     }
     
     /// <summary>

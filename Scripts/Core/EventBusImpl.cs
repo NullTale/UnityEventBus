@@ -15,7 +15,7 @@ namespace UnityEventBus
         private const int k_DefaultSetSize = 4;
 
         private Dictionary<Type, SortedCollection<ListenerWrapper>> m_Listeners = new Dictionary<Type, SortedCollection<ListenerWrapper>>();
-        private HashSet<IEventBus>                                  m_Buses     = new HashSet<IEventBus>();
+        private SortedCollection<BusWrapper>                        m_Buses     = new SortedCollection<BusWrapper>(BusWrapper.k_OrderComparer);
 
         // =======================================================================
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -30,12 +30,12 @@ namespace UnityEventBus
                 {
 #if  DEBUG
                     if (listenerWrapper.IsActive)
-                        invoker.Invoke(in e, (IListener<TEvent>)listenerWrapper.Listener);
+                        invoker.Invoke(in e, in listenerWrapper.Listener);
 #else
                     try
                     {
                         if (listenerWrapper.IsActive)
-                            invoker.Invoke(in e, (IListener<TEvent>)listenerWrapper.Listener);
+                            invoker.Invoke(in e, in listenerWrapper.Listener);
                     }
                     catch (Exception exception)
                     {
@@ -50,7 +50,8 @@ namespace UnityEventBus
             {
                 foreach (var bus in m_Buses.ToArray())
                 {
-                    bus.Send(in e);
+                    if (bus.IsActive)
+                        bus.Bus.Send(in e, in invoker);
                 }
             }
         }
@@ -60,9 +61,6 @@ namespace UnityEventBus
         {
             if (listener == null)
                 throw new ArgumentNullException(nameof(listener));
-
-            // activate
-            listener.IsActive = true;
 
             // get or create group
             if (m_Listeners.TryGetValue(listener.KeyType, out var set) == false)
@@ -81,18 +79,18 @@ namespace UnityEventBus
             if (listener == null)
                 throw new ArgumentNullException(nameof(listener));
 
-            // deactivate
-            listener.IsActive = false;
-
             // remove first match
             if (m_Listeners.TryGetValue(listener.KeyType, out var set))
             {
-                if (set.Remove(listener))
-                    listener.Dispose();
+                // remove & dispose
+                if (set.Extract(in listener, out var extracted))
+                    extracted.Dispose();
 
                 if (set.Count == 0)
                     m_Listeners.Remove(listener.KeyType);
             }
+
+            listener.Dispose();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -101,7 +99,7 @@ namespace UnityEventBus
             if (bus == null)
                 throw new ArgumentNullException(nameof(bus));
 
-            m_Buses.Add(bus);
+            m_Buses.Add(BusWrapper.Create(in bus));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -110,7 +108,11 @@ namespace UnityEventBus
             if (bus == null)
                 throw new ArgumentNullException(nameof(bus));
 
-            m_Buses.Remove(bus);
+            var busWrapper = BusWrapper.Create(in bus);
+            if (m_Buses.Extract(busWrapper, out var extracted))
+                extracted.Dispose();
+
+            busWrapper.Dispose();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

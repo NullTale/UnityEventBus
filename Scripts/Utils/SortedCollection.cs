@@ -53,5 +53,21 @@ namespace UnityEventBus.Utils
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Remove(T item) => m_Collection.Remove(item);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool Extract(in T item, out T extracted)
+        {
+            var index = m_Collection.IndexOf(item);
+
+            if (index == -1)
+            {
+                extracted = default;
+                return false;
+            }
+
+            extracted = m_Collection[index];
+            m_Collection.RemoveAt(index);
+            return true;
+        }
     }
 }

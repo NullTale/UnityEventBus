@@ -153,7 +153,7 @@ namespace UnityEventBus
             public int                  Priority => m_Order;
 
             // =======================================================================
-            public abstract void React(T e);
+            public abstract void React(in T e);
             
             protected ListenerActionBase(string name, int order)
             {
@@ -170,7 +170,7 @@ namespace UnityEventBus
             private delegate void ProcessDelagate(T e);
             
             // =======================================================================
-            public override void React(T e)
+            public override void React(in T e)
             {
                 // if key matches invoke action
                 m_Action(e);

@@ -7,10 +7,32 @@ namespace UnityEventBus
     /// <summary>
     /// MonoBehaviour event bus this auto subscription logic, if implements the IListener interface, subscribes it to itself
     /// </summary>
-    public class EventBus : EventBusBase
+    public class EventBus : EventBusBase, IListenerOptions
     {
+        public string Name     => name;
+        public int    Priority
+        {
+            get => m_Priority;
+            set
+            {
+                if (m_Priority == value)
+                    return;
+
+                m_Priority = value;
+
+                // reconnect if order was changed
+                if (m_Connected)
+                {
+                    _disconnectBus();
+                    _connectBus();
+                }
+            }
+        }
+
         [SerializeField]
         private SubscriptionTarget m_SubscribeTo = SubscriptionTarget.None;
+        [SerializeField]
+        private int                m_Priority;
         private bool               m_Connected;
         private List<IEventBus>    m_Subscriptions = new List<IEventBus>();
 
@@ -34,8 +56,6 @@ namespace UnityEventBus
                     return;
 
                 m_SubscribeTo = value;
-
-                _buildSubscriptionList();
 
                 if (m_Connected)
                 {

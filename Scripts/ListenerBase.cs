@@ -29,7 +29,10 @@ namespace UnityEventBus
 
                 // reconnect if order was changed
                 if (m_Connected)
-                    _reconnect();
+                {
+                    _disconnectListener();
+                    _connectListener();
+                }
             }
         }
 
@@ -42,8 +45,6 @@ namespace UnityEventBus
                     return;
 
                 m_SubscribeTo = value;
-
-                _buildSubscriptionList();
 
                 if (m_Connected)
                 {
@@ -135,12 +136,6 @@ namespace UnityEventBus
                 if (transform.TryGetComponent<IEventBus>(out var thisBus))
                     m_Buses.Add(thisBus);
             }
-        }
-
-        private void _reconnect()
-        {
-            _disconnectListener();
-            _connectListener();
         }
     }
 }
