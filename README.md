@@ -14,7 +14,29 @@ Or copy-paste somewhere inside your project Assets folder.
 
 ## Event Listener
 
+The simplest example of a listener. On OnEnable event Listener will connect to the desired bus and will start receiving messages from it.
+
+```c#
+using UnityEngine;
+using UnityEventBus;
+
+// same as SimpleListener : ListenerBase, IListener<string>
+public class SimpleListener : Listener<string>
+{
+    public override void React(in string e)
+    {
+        Debug.Log(e);
+    }
+}
+```
+
+In the unity editor, you can set up the behavior in detail.
+
+![Listener](https://user-images.githubusercontent.com/1497430/123495864-1c812f00-d62e-11eb-81a9-0144b56529dd.png)
+
 To listen messages from the bus you need to execute at least one `IListener<>` interface and subscribe to a desired bus.
+
+Note: Listener can have any number of IListener<> interfaces.
 
 ```c#
 using UnityEngine;
@@ -59,29 +81,8 @@ public class SimpleListener : MonoBehaviour, IListener<string>, IListenerOptions
     public int    Priority => 1;
 ```
 
-The same can be done with `Listener<>` or `ListenerBase` class.
-
-```c#
-using UnityEngine;
-using UnityEventBus;
-
-// same as SimpleListener : ListenerBase, IListener<string>
-public class SimpleListener : Listener<string>
-{
-    public override void React(in string e)
-    {
-        Debug.Log(e);
-    }
-}
-```
-
-In the unity editor, you can set up the behavior in detail.
-
-![Listener](https://user-images.githubusercontent.com/1497430/123495864-1c812f00-d62e-11eb-81a9-0144b56529dd.png)
-
-
 ## Local Event Bus
-To create a local bus, you need to inherit a class from the `EventBusBase`.
+To create a local bus, you need to inherit from the `EventBusBase` class.
 
 ```c#
 using UnityEngine;
@@ -93,14 +94,6 @@ public class Unit : EventBusBase
     {
         // send event to this
         this.Send("String event");
-    }
-
-    public override void Send<T>(in T e)
-    {
-        // log each income event
-        Debug.Log(e);
-
-        base.Send(in e);
     }
 }
 ```
@@ -131,18 +124,9 @@ public class Unit : EventBus
 
 ![Bus](https://user-images.githubusercontent.com/1497430/123495869-2145e300-d62e-11eb-8594-094b221f2bb8.png)
 
-## Using IEvent messages
-There is the helper message type `IEvent`, which contains the key and optional data. To send IEvent message you need to use `SendEvent` function.
+## IEvent messages
+There is a helper message extension that sends `IEvent` messages with a key and optional data. To send an IEvent message, you need to use the `SendEvent` function instead of `Send`.
 
-```c#
-// unit event keys
-public enum UnitEvent
-{
-    Created,
-    Damage,
-    Heal
-}
-```
 ```c#
 using UnityEngine;
 using UnityEventBus;
@@ -168,6 +152,14 @@ public class Unit : EventBusBase
     {
         this.SendEvent(UnitEvent.Heal, 1);
     }
+}
+
+// unit event keys
+public enum UnitEvent
+{
+    Created,
+    Damage,
+    Heal
 }
 ```
 
