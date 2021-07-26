@@ -14,7 +14,7 @@ Or copy-paste somewhere inside your project Assets folder.
 
 ## Event Listener
 
-The simplest example of a listener. On OnEnable event Listener will connect to the desired bus and will start receiving messages from it.
+On OnEnable event Listener will connect to the desired bus and will start receiving messages from it.
 
 ```c#
 using UnityEngine;
