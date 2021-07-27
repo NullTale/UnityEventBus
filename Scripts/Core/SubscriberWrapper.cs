@@ -5,27 +5,27 @@ using System.Runtime.CompilerServices;
 namespace UnityEventBus
 {
     /// <summary>
-    /// Listener container, helper class
+    /// Subscriber container, helper class
     /// </summary>
-    public sealed class ListenerWrapper : IDisposable
+    internal sealed class SubscriberWrapper : IDisposable
     {
-        internal static Stack<ListenerWrapper> s_WrappersPool = new Stack<ListenerWrapper>(512);
+        internal static Stack<SubscriberWrapper> s_WrappersPool = new Stack<SubscriberWrapper>(512);
 
-        public static readonly IComparer<ListenerWrapper> k_OrderComparer = new OrderComparer();
+        public static readonly IComparer<SubscriberWrapper> k_OrderComparer = new OrderComparer();
 
-        private IListenerOptions m_Options;
+        private ISubscriberOptions m_Options;
 
         internal bool          IsActive;
-        public   Type          KeyType;
-        public   IListenerBase Listener;
+        public   Type          Key;
+        public   ISubscriber   Subscriber;
         public   string        Name     => m_Options.Name;
         public   int           Order    => m_Options.Priority;
 
         // =======================================================================
-        private sealed class OrderComparer : IComparer<ListenerWrapper>
+        private sealed class OrderComparer : IComparer<SubscriberWrapper>
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public int Compare(ListenerWrapper x, ListenerWrapper y)
+            public int Compare(SubscriberWrapper x, SubscriberWrapper y)
             {
                 return x.Order - y.Order;
             }
@@ -33,52 +33,57 @@ namespace UnityEventBus
 
         // =======================================================================
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ListenerWrapper(IListenerBase listener, Type type)
+        public SubscriberWrapper(ISubscriber listener, Type type)
         {
             Setup(listener, type);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Setup(IListenerBase listener, Type type)
+        public void Setup(ISubscriber listener, Type type)
         {
-            IsActive  = true;
-            Listener  = listener;
-            m_Options = listener as IListenerOptions ?? Extensions.s_DefaultListenerOptions;
-            KeyType   = type;
+            IsActive   = true;
+            Subscriber = listener;
+            m_Options  = listener as ISubscriberOptions ?? Extensions.s_DefaultSubscriberOptions;
+            Key        = type;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override bool Equals(object obj)
         {
-            return Listener == ((ListenerWrapper)obj).Listener;
+            return Subscriber == ((SubscriberWrapper)obj).Subscriber;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override int GetHashCode()
         {
-            return Listener.GetHashCode();
+            return Subscriber.GetHashCode();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Dispose()
         {
-            IsActive = false;
-            Listener = null;
+            IsActive   = false;
+            Subscriber = null;
             m_Options  = null;
             s_WrappersPool.Push(this);
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ListenerWrapper Create(IListenerBase listener, Type type)
+        public static SubscriberWrapper Create(ISubscriber listener, Type key)
         {
             if (s_WrappersPool.Count > 0)
             {
                 var wrapper = s_WrappersPool.Pop();
-                wrapper.Setup(listener, type);
+                wrapper.Setup(listener, key);
                 return wrapper;
             }
             else
-                return new ListenerWrapper(listener, type);
+                return new SubscriberWrapper(listener, key);
+        }
+
+        public override string ToString()
+        {
+            return $"Sub: <Name> {Name}, <Type> {Subscriber.GetType()}, <Key> {Key}";
         }
     }
 }

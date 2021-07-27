@@ -7,7 +7,7 @@ namespace UnityEventBus
     /// </summary>
     public class EventBusBase : MonoBehaviour, IEventBus
     {
-        protected IEventBusImpl m_Impl = new EventBusImpl();
+        private IEventBusImpl m_Impl = new EventBusImpl();
 
         // =======================================================================
         public void Send<TEvent, TInvoker>(in TEvent e, in TInvoker invoker) where TInvoker : IEventInvoker
@@ -15,24 +15,17 @@ namespace UnityEventBus
             m_Impl.Send(in e, in invoker);
         }
 
-        public void Subscribe(IListenerBase listener)
+        public void Subscribe(ISubscriber subscriber)
         {
-            // can contain multiple listeners
-            var listeners = listener.ExtractWrappers();
-
             // add listeners to the bus
-            foreach (var listenerWrapper in listeners)
-                m_Impl.Subscribe(listenerWrapper);
+            foreach (var wrapper in subscriber.ExtractWrappers())
+                m_Impl.Subscribe(wrapper);
         }
 
-        public void UnSubscribe(IListenerBase listener)
+        public void UnSubscribe(ISubscriber subscriber)
         {
-            // can contain multiple listeners
-            var listeners = listener.ExtractWrappers();
-
-            // remove listeners from the bus
-            foreach (var listenerWrapper in listeners)
-                m_Impl.UnSubscribe(listenerWrapper);
+            foreach (var wrapper in subscriber.ExtractWrappers())
+                m_Impl.UnSubscribe(wrapper);
         }
 
         public void Subscribe(IEventBus bus)
@@ -49,6 +42,14 @@ namespace UnityEventBus
         {
             m_Impl.Dispose();
             m_Impl = null;
+        }
+        
+        // =======================================================================
+        [ContextMenu("Log subscribers", false, 0)]
+        public void LogSubscribers()
+        {
+            foreach (var subscriber in m_Impl.GetSubscribers())
+                Debug.Log(subscriber.ToString());
         }
     }
 }

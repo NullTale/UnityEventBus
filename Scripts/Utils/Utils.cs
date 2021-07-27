@@ -10,7 +10,7 @@ namespace UnityEventBus.Utils
         {
             return typeof(T).IsAssignableFrom(source);
         }
-
+        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static bool IsNull<T>(this T o) where T : class
         {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace UnityEventBus
 {
-    public sealed class GenericListener<T> : IListener<T>, IListenerOptions, IDisposable
+    public sealed class GenericListener<T> : IListener<T>, ISubscriberOptions, IDisposable
     {
         private string m_Name;
         private int    m_Order;

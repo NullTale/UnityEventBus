@@ -1,0 +1,31 @@
+using System;
+using System.Runtime.CompilerServices;
+
+namespace UnityEventBus
+{
+    public static class ActionExtensions
+    {
+        public static readonly ActionInvoker s_ActionInvoker = new ActionInvoker();
+
+        // =======================================================================
+        public class ActionInvoker: IEventInvoker
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public void Invoke<TEvent>(in TEvent e, in ISubscriber listener)
+            {
+                ((IHandleInvoker)e).Invoke(listener);
+            }
+        }
+
+        // =======================================================================
+        public static void SendAction<THandle>(this IEventBus bus, in Action<THandle> action)
+        {
+            bus.Send<IHandleInvoker<THandle>, ActionInvoker>(new HandleInvoker<THandle>(action), s_ActionInvoker);
+        }
+        
+        public static void SendAction<THandle>(this IHandle<THandle> handle, in Action<THandle> action)
+        {
+            s_ActionInvoker.Invoke(new HandleInvoker<THandle>(action), handle);
+        }
+    }
+}

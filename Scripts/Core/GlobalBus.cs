@@ -39,17 +39,17 @@ namespace UnityEventBus
         }
 
         public const object k_DefaultEventData = null;
-        public const int    k_DefaultOrder     = 0;
+        public const int    k_DefaultPriority  = 0;
         public const string k_DefaultName      = "";
 
         private IEventBusImpl m_Impl;
 
+        public bool InitOnAwake;
         public bool CollectClasses;
         public bool CollectFunctions;
-        public bool InitOnAwake;
 
         // =======================================================================
-        private abstract class ListenerActionBase<T> : IListener<T>, IListenerOptions
+        private abstract class ListenerActionBase<T> : IListener<T>, ISubscriberOptions
         {
             protected string            m_Name;
             protected int               m_Proprity;
@@ -139,14 +139,14 @@ namespace UnityEventBus
             Send(in e, in invoker);
         }
 
-        void IEventBus.Subscribe(IListenerBase listener)
+        void IEventBus.Subscribe(ISubscriber subscriber)
         {
-            Subscribe(listener);
+            Subscribe(subscriber);
         }
 
-        void IEventBus.UnSubscribe(IListenerBase listener)
+        void IEventBus.UnSubscribe(ISubscriber subscriber)
         {
-            UnSubscribe(listener);
+            UnSubscribe(subscriber);
         }
 
         void IEventBus.Subscribe(IEventBus bus)
@@ -204,14 +204,10 @@ namespace UnityEventBus
             Instance.SendEvent(key, data);
         }
 
-	    public static void Subscribe(IListenerBase listener)
+	    public static void Subscribe(ISubscriber subscriber)
 	    {
-            // allow multiply listeners in one
-            var listeners = listener.ExtractWrappers();
-
-            // push listeners in to the message system
-            foreach (var listenerWrapper in listeners)
-                Instance.m_Impl.Subscribe(listenerWrapper);
+            foreach (var wrapper in subscriber.ExtractWrappers())
+                Instance.m_Impl.Subscribe(wrapper);
         }
 
         public static void Subscribe(IEventBus bus)
@@ -219,18 +215,14 @@ namespace UnityEventBus
             Instance.m_Impl.Subscribe(bus);
         }
 
-        public static void UnSubscribe(IListenerBase listener)
+        public static void UnSubscribe(ISubscriber subscriber)
 	    {
 #if UNITY_EDITOR
             if (s_Instance == null)
                 return;
 #endif
-            // allow multiply listeners in one
-            var listeners = listener.ExtractWrappers();
-
-            // push listeners in to the message system
-            foreach (var listenerWrapper in listeners)
-		        Instance.m_Impl.UnSubscribe(listenerWrapper);
+            foreach (var wrapper in subscriber.ExtractWrappers())
+		        Instance.m_Impl.UnSubscribe(wrapper);
 	    }
         
         public static void UnSubscribe(IEventBus bus)
@@ -270,7 +262,7 @@ namespace UnityEventBus
                                 continue;
 
                             // must implement event listener interface
-                            if (typeof(IListenerBase).IsAssignableFrom(type) == false)
+                            if (typeof(ISubscriber).IsAssignableFrom(type) == false)
                                 continue;
 
                             // create & register listener
@@ -282,12 +274,12 @@ namespace UnityEventBus
                                     var el = new GameObject(attribure.Name, type).GetComponent(type) as MonoBehaviour;
                                     el.transform.SetParent(transform);
 
-                                    Subscribe(el as IListenerBase);
+                                    Subscribe(el as ISubscriber);
                                 }
                                 else
                                 {
                                     // listener is class
-                                    var el = (IListenerBase)Activator.CreateInstance(type);
+                                    var el = (ISubscriber)Activator.CreateInstance(type);
                                     Subscribe(el);
                                 }
                             }
@@ -332,7 +324,7 @@ namespace UnityEventBus
                                 var keyType = args[0].ParameterType;
                                 var el = Activator.CreateInstance(
                                     typeof(ListenerStaticFunction<>).MakeGenericType(keyType),
-                                    attribure.Name, methodInfo, attribure.Order) as IListenerBase;
+                                    attribure.Name, methodInfo, attribure.Order) as ISubscriber;
                                 Subscribe(el);
                             }
                             catch (Exception e)
@@ -346,13 +338,11 @@ namespace UnityEventBus
         }
 
         // =======================================================================
-        [ContextMenu("Log listeners")]
-        public void LogListeners()
+        [ContextMenu("Log subscribers")]
+        public void LogSubscribers()
         {
-            foreach (var listener in m_Impl.GetListeners())
-                Debug.Log($"Name: {listener.Name}\n" +
-                          $"Type: {listener.Listener.GetType()}\n" +
-                          $"Key: {listener.KeyType}\n");
+            foreach (var subscriber in m_Impl.GetSubscribers())
+                Debug.Log(subscriber);
         }
     }
 }

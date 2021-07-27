@@ -4,13 +4,13 @@ using System.Runtime.CompilerServices;
 
 namespace UnityEventBus
 {
-    public sealed class BusWrapper : IDisposable
+    internal sealed class BusWrapper : IDisposable
     {
         internal static Stack<BusWrapper> s_WrappersPool = new Stack<BusWrapper>(512);
 
         public static readonly  IComparer<BusWrapper> k_OrderComparer  = new OrderComparer();
 
-        private IListenerOptions m_Options;
+        private ISubscriberOptions m_Options;
 
         internal bool          IsActive;
         public   IEventBus     Bus;
@@ -38,8 +38,8 @@ namespace UnityEventBus
         public void Setup(in IEventBus bus)
         {
             IsActive = true;
-            Bus  = bus;
-            m_Options = bus as IListenerOptions ?? Extensions.s_DefaultListenerOptions;
+            Bus      = bus;
+            m_Options = bus as ISubscriberOptions ?? Extensions.s_DefaultSubscriberOptions;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -57,8 +57,8 @@ namespace UnityEventBus
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Dispose()
         {
-            IsActive = false;
-            Bus  = null;
+            IsActive  = false;
+            Bus       = null;
             m_Options = null;
             s_WrappersPool.Push(this);
         }
@@ -74,6 +74,11 @@ namespace UnityEventBus
             }
             else
                 return new BusWrapper(in bus);
+        }
+
+        public override string ToString()
+        {
+            return $"Bus: <Name> {Name}, <Type> {Bus.GetType()}";
         }
     }
 }

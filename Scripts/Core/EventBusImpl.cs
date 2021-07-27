@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using UnityEngine;
 using UnityEventBus.Utils;
 
 
@@ -10,12 +11,12 @@ namespace UnityEventBus
     /// <summary>
     /// EventBus functionality
     /// </summary>
-    public class EventBusImpl : IEventBusImpl
+    internal class EventBusImpl : IEventBusImpl
     {
         private const int k_DefaultSetSize = 4;
 
-        private Dictionary<Type, SortedCollection<ListenerWrapper>> m_Listeners = new Dictionary<Type, SortedCollection<ListenerWrapper>>();
-        private SortedCollection<BusWrapper>                        m_Buses     = new SortedCollection<BusWrapper>(BusWrapper.k_OrderComparer);
+        private Dictionary<Type, SortedCollection<SubscriberWrapper>> m_Subscribers = new Dictionary<Type, SortedCollection<SubscriberWrapper>>();
+        private SortedCollection<BusWrapper>                          m_Buses       = new SortedCollection<BusWrapper>(BusWrapper.k_OrderComparer);
 
         // =======================================================================
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -23,23 +24,23 @@ namespace UnityEventBus
             where TInvoker : IEventInvoker
         {
             // propagate, invoke listeners
-            if (m_Listeners.TryGetValue(typeof(IListener<TEvent>), out var set))
+            if (m_Subscribers.TryGetValue(typeof(TEvent), out var set))
             {
                 // set can be modified through execution
-                foreach (var listenerWrapper in set.ToArray())
+                foreach (var wrapper in set.ToArray())
                 {
 #if  DEBUG
-                    if (listenerWrapper.IsActive)
-                        invoker.Invoke(in e, in listenerWrapper.Listener);
+                    if (wrapper.IsActive)
+                        invoker.Invoke(in e, in wrapper.Subscriber);
 #else
                     try
                     {
-                        if (listenerWrapper.IsActive)
-                            invoker.Invoke(in e, in listenerWrapper.Listener);
+                        if (wrapper.IsActive)
+                            invoker.Invoke(in e, in wrapper.Subscriber);
                     }
                     catch (Exception exception)
                     {
-                        Debug.LogError($"Listener: id: {listenerWrapper.Name}, key: {listenerWrapper.KeyType}; Exception: {exception}");
+                        Debug.LogError($"{wrapper}; Exception: {exception}");
                     }
 #endif
                 }
@@ -57,40 +58,40 @@ namespace UnityEventBus
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Subscribe(ListenerWrapper listener)
+        public void Subscribe(SubscriberWrapper subscriber)
         {
-            if (listener == null)
-                throw new ArgumentNullException(nameof(listener));
+            if (subscriber == null)
+                throw new ArgumentNullException(nameof(subscriber));
 
             // get or create group
-            if (m_Listeners.TryGetValue(listener.KeyType, out var set) == false)
+            if (m_Subscribers.TryGetValue(subscriber.Key, out var set) == false)
             {
-                set = new SortedCollection<ListenerWrapper>(ListenerWrapper.k_OrderComparer, k_DefaultSetSize);
-                m_Listeners.Add(listener.KeyType, set);
+                set = new SortedCollection<SubscriberWrapper>(SubscriberWrapper.k_OrderComparer, k_DefaultSetSize);
+                m_Subscribers.Add(subscriber.Key, set);
             }
 
-            if (set.Contains(listener) == false)
-                set.Add(listener);
+            //if (set.Contains(subscriber) == false)
+            set.Add(subscriber);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void UnSubscribe(ListenerWrapper listener)
+        public void UnSubscribe(SubscriberWrapper subscriber)
         {
-            if (listener == null)
-                throw new ArgumentNullException(nameof(listener));
+            if (subscriber == null)
+                throw new ArgumentNullException(nameof(subscriber));
 
             // remove first match
-            if (m_Listeners.TryGetValue(listener.KeyType, out var set))
+            if (m_Subscribers.TryGetValue(subscriber.Key, out var set))
             {
                 // remove & dispose
-                if (set.Extract(in listener, out var extracted))
+                if (set.Extract(in subscriber, out var extracted))
                     extracted.Dispose();
 
                 if (set.Count == 0)
-                    m_Listeners.Remove(listener.KeyType);
+                    m_Subscribers.Remove(subscriber.Key);
             }
 
-            listener.Dispose();
+            subscriber.Dispose();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -115,15 +116,14 @@ namespace UnityEventBus
             busWrapper.Dispose();
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public IEnumerable<ListenerWrapper> GetListeners()
+        public IEnumerable<object> GetSubscribers()
         {
-            return m_Listeners.SelectMany(group => group.Value);
+            return m_Subscribers.SelectMany<KeyValuePair<Type, SortedCollection<SubscriberWrapper>>, object>(group => group.Value).Concat(m_Buses);
         }
 
         public void Dispose()
         {
-            foreach (var wrappers in m_Listeners.Values)
+            foreach (var wrappers in m_Subscribers.Values)
             foreach (var wrapper in wrappers)
                 wrapper.Dispose();
         }

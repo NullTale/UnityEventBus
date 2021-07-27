@@ -40,5 +40,4 @@ namespace UnityEventBus
             IsApproved = true;
         }
     }
-
 }

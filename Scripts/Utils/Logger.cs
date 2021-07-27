@@ -1,10 +1,9 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace UnityEventBus.Utils
 {
-    public sealed class Logger : MonoBehaviour, IEventBus, IListenerOptions
+    public sealed class Logger : MonoBehaviour, IEventBus, ISubscriberOptions
     {
         public string Name     => nameof(Logger);
         public int    Priority => int.MinValue;
@@ -46,12 +45,12 @@ namespace UnityEventBus.Utils
                 m_Log.RemoveAt(0);
         }
 
-        public void Subscribe(IListenerBase listener)
+        public void Subscribe(ISubscriber subscriber)
         {
             throw new System.NotImplementedException();
         }
 
-        public void UnSubscribe(IListenerBase listener)
+        public void UnSubscribe(ISubscriber subscriber)
         {
             throw new System.NotImplementedException();
         }

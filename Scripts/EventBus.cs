@@ -5,9 +5,9 @@ using UnityEngine;
 namespace UnityEventBus
 {
     /// <summary>
-    /// MonoBehaviour event bus this auto subscription logic, if implements the IListener interface, subscribes it to itself
+    /// MonoBehaviour event bus this auto subscription logic, if implements the ISubscriber interface, subscribes it to itself
     /// </summary>
-    public class EventBus : EventBusBase, IListenerOptions
+    public class EventBus : EventBusBase, ISubscriberOptions
     {
         public string Name     => name;
         public int    Priority
@@ -76,8 +76,8 @@ namespace UnityEventBus
 
         protected virtual void OnEnable()
         {
-            // if implements listener interface manage self
-            if (this is IListenerBase el)
+            // if implements subscriber interface manage self
+            if (this is ISubscriber el)
                 Subscribe(el);
 
             _connectBus();
@@ -85,7 +85,7 @@ namespace UnityEventBus
 
         protected virtual void OnDisable()
         {
-            if (this is IListenerBase el)
+            if (this is ISubscriber el)
                 UnSubscribe(el);
 
             _disconnectBus();
@@ -130,14 +130,6 @@ namespace UnityEventBus
                 if (firstParent != null)
                     m_Subscriptions.Add(firstParent);
             }
-        }
-
-        // =======================================================================
-        [ContextMenu("Log listeners", false, 0)]
-        public void LogListeners()
-        {
-            foreach (var listener in m_Impl.GetListeners())
-                Debug.Log($"Name: {listener.Name} Type: {listener.Listener.GetType()} Key: {listener.KeyType}");
         }
     }
 }

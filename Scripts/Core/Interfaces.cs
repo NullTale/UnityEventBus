@@ -8,44 +8,49 @@ namespace UnityEventBus
     {
         void Send<TEvent, TInvoker>(in TEvent e, in TInvoker invoker) where TInvoker : IEventInvoker;
         
-        void Subscribe(IListenerBase listener);
-        void UnSubscribe(IListenerBase listener);
+        void Subscribe(ISubscriber subscriber);
+        void UnSubscribe(ISubscriber subscriber);
         void Subscribe(IEventBus bus);
         void UnSubscribe(IEventBus bus);
     }
 
     /// <summary> Implementation </summary>
-    public interface IEventBusImpl : IDisposable
+    internal interface IEventBusImpl : IDisposable
     {
         void Send<TEvent, TInvoker>(in TEvent e, in TInvoker invoker) where TInvoker : IEventInvoker;
 
-        void Subscribe(ListenerWrapper listener);
-        void UnSubscribe(ListenerWrapper listener);
+        void Subscribe(SubscriberWrapper subscriber);
+        void UnSubscribe(SubscriberWrapper subscriber);
         void Subscribe(IEventBus bus);
         void UnSubscribe(IEventBus bus);
 
-        IEnumerable<ListenerWrapper> GetListeners();
+        IEnumerable<object> GetSubscribers();
     }
 
     /// <summary> Invokes events on the listener </summary>
     public interface IEventInvoker
     {
-        void Invoke<TEvent>(in TEvent e, in IListenerBase listener);
+        void Invoke<TEvent>(in TEvent e, in ISubscriber listener);
     }
 
-    /// <summary> Marker interface for event listeners </summary>
-    public interface IListenerBase
+    /// <summary> Container interface without generic constraints </summary>
+    public interface ISubscriber
+    {
+    }
+    
+    /// <summary> Marker interface, basically event key container in form of generic argument </summary>
+    public interface ISubscriber<TEvent>
     {
     }
 
     /// <summary> Reaction interface </summary>
-    public interface IListener<TEvent> : IListenerBase 
+    public interface IListener<TEvent> : ISubscriber<TEvent>, ISubscriber
     {
         void React(in TEvent e);
     }
 
     /// <summary> Provides additional options for event listener </summary>
-    public interface IListenerOptions
+    public interface ISubscriberOptions
     {
         /// <summary> Listener id, used in logs </summary>
         string      Name { get; }
