@@ -6,9 +6,37 @@ using UnityEngine;
 using UnityEngine.TestTools;
 using UnityEventBus;
 
-public class Tests
+public class Logic
 {
-    const string k_ExpectedString = "Test";
+    const  string k_ExpectedString = "Test";
+    const  int    k_ExpectedInt    = 1812;
+    const  float  k_ExpectedFloat  = 1.984f;
+    static object k_ExpectedObject = new object();
+
+    // =======================================================================
+    public static EventBus _createBus(Transform root = null, int priority = 0)
+    {
+        var go = new GameObject("Bus");
+        go.transform.SetParent(root, false);
+
+        var result = go.AddComponent<EventBus>();
+        result.Priority = priority;
+
+        return result;
+    }
+
+    public static TListener _createListener<TListener>(Transform root = null, int priority = 0, ListenerBase.SubscriptionTarget subscriptionTarget = ListenerBase.SubscriptionTarget.None) 
+        where TListener : ListenerBase
+    {
+        var go = new GameObject("Listener");
+        go.transform.SetParent(root, false);
+
+        var result = go.AddComponent<TListener>();
+        result.Priority = priority;
+        result.SubscribeTo = subscriptionTarget;
+
+        return result;
+    }
 
     // =======================================================================
     public class SubscribeListener : ListenerBase,
@@ -21,15 +49,51 @@ public class Tests
         {
             StringIn = e;
         }
+
+    }
+
+    public class SubscribeManyListener : ListenerBase,
+                                IListener<string>,
+                                IListener<int>,
+                                IListener<float>,
+                                IListener<object>
+
+
+    {
+        public string StringIn = string.Empty;
+        public int    IntIn    = 0;
+        public float  FloatIn  = 0f;
+        public object ObjectIn = null;
+
+        public void React(in string e)
+        {
+            StringIn = e;
+        }
+
+        public void React(in int e)
+        {
+            IntIn = e;
+        }
+
+        public void React(in float e)
+        {
+            FloatIn = e;
+        }
+
+        public void React(in object e)
+        {
+            ObjectIn = e;
+        }
     }
 
     // =======================================================================
     [Test]
     public void Listener_Subscribe()
     {
-        var parentBus = _createBus();
-        var listener  = _createListener<SubscribeListener>(parentBus.transform);
-        var thisBus   = listener.gameObject.AddComponent<EventBusBase>();
+        var parentBus    = _createBus();
+        var listener     = _createListener<SubscribeListener>(parentBus.transform);
+        var listenerMany = _createListener<SubscribeManyListener>(parentBus.transform);
+        var thisBus      = listener.gameObject.AddComponent<EventBusBase>();
 
         listener.SubscribeTo = ListenerBase.SubscriptionTarget.Global;
         _check(GlobalBus.Instance);
@@ -39,6 +103,29 @@ public class Tests
 
         listener.SubscribeTo = ListenerBase.SubscriptionTarget.This;
         _check(thisBus);
+        
+        listener.SubscribeTo = ListenerBase.SubscriptionTarget.None;
+        listener.StringIn = string.Empty;
+        GlobalBus.Send(k_ExpectedString);
+        Assert.AreNotEqual(k_ExpectedString, listener.StringIn);
+
+
+        listenerMany.SubscribeTo = ListenerBase.SubscriptionTarget.Global;
+
+        GlobalBus.Send(k_ExpectedString);
+        GlobalBus.Send(k_ExpectedInt);
+        GlobalBus.Send(k_ExpectedFloat);
+        GlobalBus.Send(k_ExpectedObject);
+        
+        Assert.AreEqual(k_ExpectedString, listenerMany.StringIn);
+        Assert.AreEqual(k_ExpectedInt, listenerMany.IntIn);
+        Assert.AreEqual(k_ExpectedFloat, listenerMany.FloatIn);
+        Assert.AreEqual(k_ExpectedObject, listenerMany.ObjectIn);
+        
+        listenerMany.SubscribeTo = ListenerBase.SubscriptionTarget.None;
+        listenerMany.ObjectIn = null;
+        GlobalBus.Send(k_ExpectedObject);
+        Assert.AreNotEqual(k_ExpectedObject, listenerMany.ObjectIn);
 
         // ===================================
         void _check(IEventBus bus)
@@ -258,28 +345,4 @@ public class Tests
         Assert.AreEqual(k_ExpectedString, listener.StringIn);
     }
 
-    // =======================================================================
-    private EventBus _createBus(Transform root = null, int priority = 0)
-    {
-        var go = new GameObject("Bus");
-        go.transform.SetParent(root, false);
-
-        var result = go.AddComponent<EventBus>();
-        result.Priority = priority;
-
-        return result;
-    }
-
-    private TListener _createListener<TListener>(Transform root = null, int priority = 0, ListenerBase.SubscriptionTarget subscriptionTarget = ListenerBase.SubscriptionTarget.None) 
-        where TListener : ListenerBase
-    {
-        var go = new GameObject("Listener");
-        go.transform.SetParent(root, false);
-
-        var result = go.AddComponent<TListener>();
-        result.Priority = priority;
-        result.SubscribeTo = subscriptionTarget;
-
-        return result;
-    }
 }
