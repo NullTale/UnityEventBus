@@ -42,6 +42,8 @@ public class SimpleListener : Listener<string>
 
 In the unity editor, you can set up the behavior in detail. Such as subscription targets and priority.
 
+>Note: Lower priority triggers first, highest last, equal invokes in order of subscription
+
 ![Listener](https://user-images.githubusercontent.com/1497430/123495864-1c812f00-d62e-11eb-81a9-0144b56529dd.png)
 
 To create your custom listener you need to implement at least one `IListener<>` interface and subscribe to the desired bus.
@@ -87,7 +89,6 @@ You can also implement `ISubscriberOptions` interface to setup debug name and li
 public class SimpleListener : MonoBehaviour, IListener<string>, ISubscriberOptions
 {
     public string Name     => name;
-    // lower priority triggers first, highest last, equal invokes in order of subscription
     public int    Priority => 1;
 ```
 
