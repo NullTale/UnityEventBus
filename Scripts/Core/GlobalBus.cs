@@ -203,8 +203,28 @@ namespace UnityEventBus
         {
             Instance.SendEvent(key, data);
         }
+        
+        public static void SendAction<THandle>(in Action<THandle> action)
+        { 
+            Instance.SendAction(in action);
+        }
 
-	    public static void Subscribe(ISubscriber subscriber)
+        public static bool SendRequest<TKey>(in TKey key)
+        { 
+            return Instance.SendRequest(in key);
+        }
+
+        public static bool SendRequest<TKey, Data>(in TKey key, in Data data)
+        {
+            return Instance.SendRequest(in key, data);
+        }
+
+        public static bool SendRequest<TKey>(in TKey key, params object[] data)
+        {
+            return Instance.SendRequest(key, data);
+        }
+
+        public static void Subscribe(ISubscriber subscriber)
 	    {
             foreach (var wrapper in subscriber.ExtractWrappers())
                 Instance.m_Impl.Subscribe(wrapper);

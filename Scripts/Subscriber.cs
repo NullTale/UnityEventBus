@@ -5,7 +5,7 @@ using UnityEngine;
 namespace UnityEventBus
 {
     /// <summary> Base class for EventListener & Listener MonoBehavior </summary>
-    public abstract class ListenerBase : MonoBehaviour, ISubscriber, ISubscriberOptions
+    public abstract class Subscriber : MonoBehaviour, ISubscriber, ISubscriberOptions
     {
         [SerializeField] [Tooltip("Subscription targets")]
         private SubscriptionTarget m_SubscribeTo = SubscriptionTarget.None;

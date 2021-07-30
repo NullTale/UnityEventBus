@@ -1,7 +1,7 @@
 namespace UnityEventBus
 {
     // helper generic
-    public abstract class Listener<A> : ListenerBase, IListener<A>
+    public abstract class Listener<A> : Subscriber, IListener<A>
     {
         public abstract void React(in A e);
     }

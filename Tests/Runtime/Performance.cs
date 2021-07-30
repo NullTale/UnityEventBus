@@ -6,19 +6,21 @@ using UnityEventBus;
 
 public class Performance
 {
-    public class StringListener : ListenerBase,
+    public class StringListener : Subscriber,
                                      IListener<string>
     {
+        int n;
         public void React(in string e)
         {
+            n ++;
         }
     }
 
     [Test, Performance]
     public void Send_String()
     {
-        var listener = Logic._createListener<StringListener>();
-        listener.SubscribeTo = ListenerBase.SubscriptionTarget.Global;
+        var sub = Logic._createSubscriber<StringListener>();
+        sub.SubscribeTo = Subscriber.SubscriptionTarget.Global;
 
         Measure.Method(() =>
                {
@@ -30,19 +32,21 @@ public class Performance
                .Run();
     }
     
-    public class EventStringListener : ListenerBase,
+    public class EventStringListener : Subscriber,
                                      IListener<IEvent<string>>
     {
+        int n;
         public void React(in IEvent<string> e)
         {
+             n ++;
         }
     }
 
     [Test, Performance]
     public void Send_Event()
     {
-        var listener = Logic._createListener<EventStringListener>();
-        listener.SubscribeTo = ListenerBase.SubscriptionTarget.Global;
+        var sub = Logic._createSubscriber<EventStringListener>();
+        sub.SubscribeTo = Subscriber.SubscriptionTarget.Global;
 
         Measure.Method(() =>
                {
@@ -54,11 +58,69 @@ public class Performance
                .Run();
     }
 
+    public interface IActionHandle
+    {
+        void Do();
+    }
+
+    public class ActionHandle : Subscriber,
+                                IHandle<IActionHandle>,
+                                IActionHandle
+    {
+        int n;
+        public void Do()
+        {
+            n ++;
+        }
+    }
+    
+    [Test, Performance]
+    public void Send_Action()
+    {
+        var sub = Logic._createSubscriber<ActionHandle>();
+        sub.SubscribeTo = Subscriber.SubscriptionTarget.Global;
+
+        Measure.Method(() =>
+               {
+                   GlobalBus.SendAction<IActionHandle>(n => n.Do());
+               })
+               .IterationsPerMeasurement(10000)
+               .MeasurementCount(10)
+               .GC()
+               .Run();
+    }
+    
+    public class RequestListener : Subscriber,
+                                     IListener<IRequest<string>>
+    {
+        int n;
+        public void React(in IRequest<string> e)
+        {
+             n ++;
+        }
+    }
+
+    [Test, Performance]
+    public void Send_Request()
+    {
+        var sub = Logic._createSubscriber<RequestListener>();
+        sub.SubscribeTo = Subscriber.SubscriptionTarget.Global;
+
+        Measure.Method(() =>
+               {
+                   GlobalBus.SendRequest("str");
+               })
+               .IterationsPerMeasurement(10000)
+               .MeasurementCount(10)
+               .GC()
+               .Run();
+    }
+
     [Test, Performance]
     public void Subscribe()
     {
         var listeners = Enumerable
-                        .Repeat<Func<ListenerBase>>(() => Logic._createListener<EventStringListener>(), 20)
+                        .Repeat<Func<Subscriber>>(() => Logic._createSubscriber<EventStringListener>(), 20)
                         .Select(n => n.Invoke())
                         .ToArray();
 
