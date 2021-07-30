@@ -18,9 +18,9 @@ Or copy-paste somewhere inside your project Assets folder.
 * [Event Listener](#event-listener)
 * [Event Bus](#event-bus)
 * [Extentions](#extentions)
+	+ [Action](#action)
 	+ [Event](#event)
 	+ [Request](#request)
-	+ [Action](#action)
 
 ## Event Listener
 
@@ -122,6 +122,41 @@ public class Unit : EventBus
 ![Bus](https://user-images.githubusercontent.com/1497430/123495869-2145e300-d62e-11eb-8594-094b221f2bb8.png)
 
 ## Extentions
+
+### Action
+Sometimes it can be more convenient to look at listeners as a set of interfaces, the `SendAction` method extension is used for this. For an object to be an action target it must execute an interface` IHandle<>` with the interface type it provides.
+```c#
+public class Unit : EventBus
+{
+    [ContextMenu("Heal Action")]
+    public void Heal()
+    {
+        // send invoke heal action on the IUnitHP interface
+        this.SendAction<IUnitHP>(hp => hp.Heal(1));
+    }
+}
+```
+```c#
+public interface IUnitHP
+{
+    void Heal(int val);
+}
+
+// implement IHandle<IUnitHP> interface to be an action target
+public class UnitHP : Subscriber, 
+                      IUnitHP,
+                      IHandle<IUnitHP>
+{
+    public int HP = 2;
+
+    public void Heal(int val)
+    {
+        HP += val;
+    }
+}
+```
+
+
 ### Event
 Event is a message that contains keys and optional data. To send an Event, the `SendEvent` extension method is used. To receive events must be implemented `IListener<IEvent<TEventKey>>` interface, where TEventKey is a key of events, which listener wants to react.
 
@@ -250,38 +285,6 @@ public class UnitHP : Subscriber,
                 }
             } break;
         }
-    }
-}
-```
-### Action
-Sometimes it can be more convenient to look at listeners as a set of interfaces, the `SendAction` method extension is used for this. For an object to be an action target it must execute an interface` IHandle<>` with the interface type it provides.
-```c#
-public class Unit : EventBus
-{
-    [ContextMenu("Heal Action")]
-    public void Heal()
-    {
-        // send invoke heal action on the IUnitHP interface
-        this.SendAction<IUnitHP>(hp => hp.Heal(1));
-    }
-}
-```
-```c#
-public interface IUnitHP
-{
-    void Heal(int val);
-}
-
-// implement IHandle<IUnitHP> interface to be an action target
-public class UnitHP : Subscriber, 
-                      IUnitHP,
-                      IHandle<IUnitHP>
-{
-    public int HP = 2;
-
-    public void Heal(int val)
-    {
-        HP += val;
     }
 }
 ```
