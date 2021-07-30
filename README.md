@@ -30,7 +30,7 @@ On OnEnable event Listener will connect to the desired bus and will start receiv
 using UnityEngine;
 using UnityEventBus;
 
-// same as SimpleListener : ListenerBase, IListener<string>
+// same as SimpleListener : Subscriber, IListener<string>
 public class SimpleListener : Listener<string>
 {
     public override void React(in string e)
@@ -167,7 +167,7 @@ using UnityEventBus;
 
 // OnEnable will subscribe to the unit and start to listen messages
 // same as UnitHP : EventListener<UnitEvent>
-public class UnitHP : ListenerBase,
+public class UnitHP : Subscriber,
                       IListener<IEvent<UnitEvent>>
 {
     public int HP = 2;
@@ -229,7 +229,7 @@ public class Unit : EventBus
 }
 ```
 ```c#
-public class UnitHP : ListenerBase,
+public class UnitHP : Subscriber,
                       IListener<IRequest<UnitEvent>>
 {
     public int HPMax = 2;
@@ -273,7 +273,7 @@ public interface IUnitHP
 }
 
 // implement IHandle<IUnitHP> interface to be an action target
-public class UnitHP : ListenerBase, 
+public class UnitHP : Subscriber, 
                       IUnitHP,
                       IHandle<IUnitHP>
 {
