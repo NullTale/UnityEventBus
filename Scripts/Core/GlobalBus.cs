@@ -10,7 +10,7 @@ namespace UnityEventBus
     /// EventBus singleton
     /// </summary>
     [DefaultExecutionOrder(-100)]
-    public sealed class GlobalBus : MonoBehaviour, IEventBus
+    public sealed partial class GlobalBus : MonoBehaviour, IEventBus
     {
         private static GlobalBus s_Instance;
         public static GlobalBus  Instance
@@ -184,44 +184,6 @@ namespace UnityEventBus
         public static void Send<TEvent>(in TEvent e)
         { 
             Instance.Send(in e);
-        }
-        
-        /// <summary> Send IEvent message </summary>
-        public static void SendEvent<TKey>(in TKey key)
-        { 
-            Instance.SendEvent(in key);
-        }
-
-        /// <summary> Send IEventData message </summary>
-        public static void SendEvent<TKey, Data>(in TKey key, in Data data)
-        {
-            Instance.SendEvent(in key, data);
-        }
-
-        /// <summary> Send IEventData message </summary>
-        public static void SendEvent<TKey>(in TKey key, params object[] data)
-        {
-            Instance.SendEvent(key, data);
-        }
-        
-        public static void SendAction<THandle>(in Action<THandle> action)
-        { 
-            Instance.SendAction(in action);
-        }
-
-        public static bool SendRequest<TKey>(in TKey key)
-        { 
-            return Instance.SendRequest(in key);
-        }
-
-        public static bool SendRequest<TKey, Data>(in TKey key, in Data data)
-        {
-            return Instance.SendRequest(in key, data);
-        }
-
-        public static bool SendRequest<TKey>(in TKey key, params object[] data)
-        {
-            return Instance.SendRequest(key, data);
         }
 
         public static void Subscribe(ISubscriber subscriber)

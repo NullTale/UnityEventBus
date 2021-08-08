@@ -39,4 +39,12 @@ namespace UnityEventBus
             return $"Action({typeof(THandle)})";
         }
     }
+    
+    public sealed partial class GlobalBus
+    {
+        public static void SendAction<THandle>(in Action<THandle> action)
+        { 
+            Instance.SendAction(in action);
+        }
+    }
 }
