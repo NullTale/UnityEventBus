@@ -1,8 +1,10 @@
+using System;
+
 namespace UnityEventBus
 {
     public static class EventExtensions
     {
-        // to bus
+        // to the bus
         public static void SendEvent<TKey>(this IEventBus bus, in TKey key)
         {
             bus.Send<IEvent<TKey>>(new Event<TKey>(in key));
@@ -18,7 +20,22 @@ namespace UnityEventBus
             bus.Send<IEvent<TKey>>(new EventData<TKey, object[]>(in key, in data));
         }
 
-        // to listener
+        public static void SendEvent<TKey>(this IEventBus bus, in Func<ISubscriber, bool> check, in TKey key)
+        {
+            bus.Send<IEvent<TKey>>(new Event<TKey>(in key), in check);
+        }
+
+        public static void SendEvent<TKey, TData>(this IEventBus bus, in TKey key, in Func<ISubscriber, bool> check, in TData data)
+        {
+            bus.Send<IEvent<TKey>>(new EventData<TKey, TData>(in key, in data), in check);
+        }
+        
+        public static void SendEvent<TKey>(this IEventBus bus, in TKey key, in Func<ISubscriber, bool> check, params object[] data)
+        {
+            bus.Send<IEvent<TKey>>(new EventData<TKey, object[]>(in key, in data), in check);
+        }
+
+        // to the listener
         public static void SendEvent<TKey>(this IListener<IEvent<TKey>> receiver, in TKey key)
         {
             receiver.React(new Event<TKey>(in key));
@@ -158,6 +175,28 @@ namespace UnityEventBus
                 dataD = default;
                 return false;
             }
+        }
+    }
+    
+    public sealed partial class GlobalBus
+    {
+        
+        /// <summary> Send IEvent message </summary>
+        public static void SendEvent<TKey>(in TKey key)
+        { 
+            Instance.SendEvent(in key);
+        }
+
+        /// <summary> Send IEventData message </summary>
+        public static void SendEvent<TKey, Data>(in TKey key, in Data data)
+        {
+            Instance.SendEvent(in key, data);
+        }
+
+        /// <summary> Send IEventData message </summary>
+        public static void SendEvent<TKey>(in TKey key, params object[] data)
+        {
+            Instance.SendEvent(key, data);
         }
     }
 }

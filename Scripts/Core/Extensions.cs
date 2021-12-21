@@ -21,10 +21,27 @@ namespace UnityEventBus
             }
         }
 
+        public class DefaultInvokerConditional : IEventInvoker
+        {
+            public Func<ISubscriber, bool>    m_Filter;
+
+            // =======================================================================
+            public void Invoke<TEvent>(in TEvent e, in ISubscriber listener)
+            {
+                if (m_Filter(listener))
+                    ((IListener<TEvent>)listener).React(in e);
+            }
+        }
+
         // =======================================================================
         public static void Send<TEvent>(this IEventBus bus, in TEvent e)
         {
             bus.Send(in e, in s_DefaultInvoker);
+        }
+
+        public static void Send<TEvent>(this IEventBus bus, in TEvent e, in Func<ISubscriber, bool> check)
+        {
+            bus.Send(in e, new DefaultInvokerConditional() { m_Filter = check });
         }
 
         public static void Send<TEvent>(this IListener<TEvent> listener, in TEvent e)

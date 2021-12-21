@@ -5,6 +5,7 @@ using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
 using UnityEventBus;
+using Object = UnityEngine.Object;
 
 public class Logic
 {
@@ -36,6 +37,12 @@ public class Logic
         result.SubscribeTo = subscriptionTarget;
 
         return result;
+    }
+
+    public static void _clear()
+    {
+        foreach (var gameObject in Object.FindObjectsOfType<GameObject>().Where(n => n != GlobalBus.Instance.gameObject))
+            Object.Destroy(gameObject);
     }
 
     // =======================================================================
@@ -90,6 +97,8 @@ public class Logic
     [Test]
     public void Listener_Subscribe()
     {
+        _clear();
+
         var parentBus    = _createBus();
         var listener     = _createSubscriber<SubscribeListener>(parentBus.transform);
         var listenerMany = _createSubscriber<SubscribeManyListener>(parentBus.transform);
@@ -158,6 +167,8 @@ public class Logic
     [Test]
     public void Listener_Priority()
     {
+        _clear();
+
         var listener0 = _createSubscriber<PriorityListener>(null, -100);
         var listener1 = _createSubscriber<PriorityListener>(null, 0);
         var listener2 = _createSubscriber<PriorityListener>(null, 0);
@@ -210,6 +221,8 @@ public class Logic
     [Test]
     public void Listener_RuntimeDeactivation()
     {
+        _clear();
+
         var listenerA = _createSubscriber<GenericListener>();
         var listenerB = _createSubscriber<GenericListener>();
         
@@ -228,6 +241,8 @@ public class Logic
     [Test]
     public void Bus_RuntimeDeactivation()
     {
+        _clear();
+
         var busA = _createBus();
         var busB = _createBus();
 
@@ -250,6 +265,8 @@ public class Logic
     [Test]
     public void Bus_Priority()
     {
+        _clear();
+
         var bus0 = _createBus(null, -100);
         var bus1 = _createBus(null, 0);
         var bus2 = _createBus(null, 0);
@@ -325,6 +342,8 @@ public class Logic
     [Test]
     public void SendEvent()
     {
+        _clear();
+
         var listener = _createSubscriber<EventListener>();
         listener.SubscribeTo = Subscriber.SubscriptionTarget.Global;
 
@@ -355,30 +374,31 @@ public class Logic
                               IHandle<IActionHandle>
 
     {
-        public int  InnerInt;
+        public int  InnerInt = 0;
 
         public void Inc()
         {
-            InnerInt++;
+            InnerInt ++;
         }
     }
 
     [Test]
     public void SendAction()
     {
+        _clear();
+
         var sub = _createSubscriber<ActionHandleSubscriber>();
         sub.SubscribeTo = Subscriber.SubscriptionTarget.Global;
 
-        sub.InnerInt = 0;
         GlobalBus.SendAction<IActionHandle>(ah => ah.Inc());
-        Assert.AreEqual(1, sub.InnerInt);
+        Assert.AreEqual(sub.InnerInt, 1);
     }
 
     public class RequestListener : Subscriber, 
                                    IListener<IRequest<string>>
 
     {
-        public string  StringIn;
+        public string  StringIn = string.Empty;
 
         public void React(in IRequest<string> e)
         {
@@ -390,18 +410,58 @@ public class Logic
     [Test]
     public void SendRequest()
     {
+        _clear();
+
         var sub1 = _createSubscriber<RequestListener>();
-        sub1.SubscribeTo = Subscriber.SubscriptionTarget.Global;
-        
         var sub2 = _createSubscriber<RequestListener>();
+
+        sub1.SubscribeTo = Subscriber.SubscriptionTarget.Global;
         sub2.SubscribeTo = Subscriber.SubscriptionTarget.Global;
 
-        sub1.StringIn = string.Empty;
-        sub2.StringIn = string.Empty;
         var requestResult = GlobalBus.SendRequest(k_ExpectedString);
 
         Assert.AreEqual(true, requestResult);
         Assert.AreEqual(k_ExpectedString, sub1.StringIn);
         Assert.AreEqual(string.Empty, sub2.StringIn);
+    }
+
+    [Test]
+    public void Filter()
+    {
+        var listenerA     = _createSubscriber<SubscribeListener>();
+        var listenerB     = _createSubscriber<SubscribeListener>();
+        var listenerC     = _createSubscriber<SubscribeListener>();
+
+        listenerA.SubscribeTo = Subscriber.SubscriptionTarget.Global;
+        listenerB.SubscribeTo = Subscriber.SubscriptionTarget.Global;
+        listenerC.SubscribeTo = Subscriber.SubscriptionTarget.Global;
+
+        GlobalBus.Send(k_ExpectedString, s => s == listenerA);
+
+        Assert.AreEqual(listenerA.StringIn, k_ExpectedString);
+        Assert.AreEqual(listenerB.StringIn, string.Empty);
+        Assert.AreEqual(listenerC.StringIn, string.Empty);
+    }
+
+    [Test]
+    public void Invokation()
+    {
+        _clear();
+
+        var listenerA     = _createSubscriber<SubscribeListener>();
+        var listenerB     = _createSubscriber<ActionHandleSubscriber>();
+        var listenerC     = _createSubscriber<RequestListener>();
+
+        listenerA.SubscribeTo = Subscriber.SubscriptionTarget.Global;
+        listenerB.SubscribeTo = Subscriber.SubscriptionTarget.Global;
+        listenerC.SubscribeTo = Subscriber.SubscriptionTarget.Global;
+
+        GlobalBus.Send(k_ExpectedString);
+        GlobalBus.SendAction<IActionHandle>(n => n.Inc());
+        GlobalBus.SendRequest(k_ExpectedString);
+
+        Assert.AreEqual(listenerA.StringIn, k_ExpectedString);
+        Assert.AreEqual(listenerB.InnerInt, 1);
+        Assert.AreEqual(listenerC.StringIn, k_ExpectedString);
     }
 }

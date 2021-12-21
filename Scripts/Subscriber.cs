@@ -137,5 +137,36 @@ namespace UnityEventBus
                     m_Buses.Add(thisBus);
             }
         }
+
+        private void _resubscribe(SubscriptionTarget subscribeTo)
+        {
+            var unsibscribe = m_SubscribeTo & ~subscribeTo;
+            var subscribe = m_SubscribeTo ^ subscribeTo;
+
+            // unsubscribe from
+            if (unsibscribe.HasFlag(SubscriptionTarget.Global))
+                m_Buses.Remove(GlobalBus.Instance);
+            if (unsibscribe.HasFlag(SubscriptionTarget.FirstParent))
+                m_Buses.Remove(transform.parent.GetComponentInParent<IEventBus>());
+            if (unsibscribe.HasFlag(SubscriptionTarget.This))
+                m_Buses.Remove(GetComponent<IEventBus>());
+
+            // subscribe to
+            if (subscribe.HasFlag(SubscriptionTarget.Global) && ReferenceEquals(GlobalBus.Instance, null) == false)
+                m_Buses.Remove(GlobalBus.Instance);
+            if (subscribe.HasFlag(SubscriptionTarget.FirstParent) && ReferenceEquals(transform.parent, null) == false)
+            {
+                var firstParent = transform.parent.GetComponentInParent<IEventBus>();
+                if (firstParent != null)
+                    m_Buses.Add(firstParent);
+            }
+            if (subscribe.HasFlag(SubscriptionTarget.This))
+            {
+                if (transform.TryGetComponent<IEventBus>(out var thisBus))
+                    m_Buses.Add(thisBus);
+            }
+
+            m_SubscribeTo = subscribeTo;
+        }
     }
 }

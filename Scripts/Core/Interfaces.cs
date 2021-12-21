@@ -6,7 +6,8 @@ namespace UnityEventBus
     /// <summary> Event messages receiver interface </summary>
     public interface IEventBus
     {
-        void Send<TEvent, TInvoker>(in TEvent e, in TInvoker invoker) where TInvoker : IEventInvoker;
+        void Send<TEvent, TInvoker>(in TEvent e, in TInvoker invoker) 
+            where TInvoker : IEventInvoker;
         
         void Subscribe(ISubscriber subscriber);
         void UnSubscribe(ISubscriber subscriber);
@@ -17,7 +18,8 @@ namespace UnityEventBus
     /// <summary> Implementation </summary>
     internal interface IEventBusImpl : IDisposable
     {
-        void Send<TEvent, TInvoker>(in TEvent e, in TInvoker invoker) where TInvoker : IEventInvoker;
+        void Send<TEvent, TInvoker>(in TEvent e, in TInvoker invoker)
+            where TInvoker : IEventInvoker;
 
         void Subscribe(SubscriberWrapper subscriber);
         void UnSubscribe(SubscriberWrapper subscriber);

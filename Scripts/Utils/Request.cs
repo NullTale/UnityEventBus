@@ -1,5 +1,3 @@
-using UnityEngine;
-
 namespace UnityEventBus
 {
     /// <summary> Base request class, can be only approved or ignored </summary>
@@ -40,24 +38,6 @@ namespace UnityEventBus
         public void Approve()
         {
             IsApproved = true;
-        }
-    }
-    
-    public sealed partial class GlobalBus
-    {
-        public static bool SendRequest<TKey>(in TKey key)
-        { 
-            return Instance.SendRequest(in key);
-        }
-
-        public static bool SendRequest<TKey, Data>(in TKey key, in Data data)
-        {
-            return Instance.SendRequest(in key, data);
-        }
-
-        public static bool SendRequest<TKey>(in TKey key, params object[] data)
-        {
-            return Instance.SendRequest(key, data);
         }
     }
 }

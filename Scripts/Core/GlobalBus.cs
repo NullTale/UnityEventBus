@@ -181,6 +181,11 @@ namespace UnityEventBus
             Instance.m_Impl.Send(in e, in invoker);
         }
         
+        public static void Send<TEvent>(in TEvent e, in Func<ISubscriber, bool> check)
+        {
+            Instance.m_Impl.Send(in e, new Extensions.DefaultInvokerConditional() { m_Filter = check });
+        }
+        
         public static void Send<TEvent>(in TEvent e)
         { 
             Instance.Send(in e);

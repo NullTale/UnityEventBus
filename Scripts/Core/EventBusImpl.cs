@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using UnityEngine;
 using UnityEventBus.Utils;
 
 
@@ -40,7 +39,7 @@ namespace UnityEventBus
                     }
                     catch (Exception exception)
                     {
-                        Debug.LogError($"{wrapper}; Exception: {exception}");
+                        UnityEngine.Debug.LogError($"{wrapper}; Exception: {exception}");
                     }
 #endif
                 }

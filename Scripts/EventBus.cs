@@ -5,7 +5,7 @@ using UnityEngine;
 namespace UnityEventBus
 {
     /// <summary>
-    /// MonoBehaviour event bus this auto subscription logic, if implements the ISubscriber interface, subscribes it to itself
+    /// MonoBehaviour event bus, if implements the ISubscriber interface, subscribes it to itself
     /// </summary>
     public class EventBus : EventBusBase, ISubscriberOptions
     {

@@ -53,26 +53,4 @@ namespace UnityEventBus
             return $"{Key} {(typeof(TData) == typeof(object[]) ? (Data as object[])?.Aggregate("", (s, o) => s + " " + o) : " " + Data)}";
         }
     }
-    
-    public sealed partial class GlobalBus
-    {
-        
-        /// <summary> Send IEvent message </summary>
-        public static void SendEvent<TKey>(in TKey key)
-        { 
-            Instance.SendEvent(in key);
-        }
-
-        /// <summary> Send IEventData message </summary>
-        public static void SendEvent<TKey, Data>(in TKey key, in Data data)
-        {
-            Instance.SendEvent(in key, data);
-        }
-
-        /// <summary> Send IEventData message </summary>
-        public static void SendEvent<TKey>(in TKey key, params object[] data)
-        {
-            Instance.SendEvent(key, data);
-        }
-    }
 }
