@@ -9,10 +9,11 @@ namespace UnityEventBus.Utils
     {
         public  int          Count      => m_Collection.Count;
         public  bool         IsReadOnly => false;
-        private List<T>      m_Collection;
+        public  List<T>      m_Collection;
         private IComparer<T> m_Comparer;
 
         // =======================================================================
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public SortedCollection(Comparison<T> compare)
         {
             m_Collection = new List<T>();

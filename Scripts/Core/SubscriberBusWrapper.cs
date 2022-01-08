@@ -4,39 +4,48 @@ using System.Runtime.CompilerServices;
 
 namespace UnityEventBus
 {
-    internal sealed class BusWrapper : IDisposable
+    internal sealed class SubscriberBusWrapper : IDisposable, ISubscriberWrapper
     {
-        internal static Stack<BusWrapper> s_WrappersPool = new Stack<BusWrapper>(512);
-
-        public static readonly  IComparer<BusWrapper> k_OrderComparer  = new OrderComparer();
-
+        internal static Stack<SubscriberBusWrapper> s_WrappersPool = new Stack<SubscriberBusWrapper>(512);
         private ISubscriberOptions m_Options;
 
-        internal bool          IsActive;
-        public   IEventBus     Bus;
-        public   string        Name  => m_Options.Name;
-        public   int           Order => m_Options.Priority;
+        internal bool      IsActive;
+        public   IEventBus Bus;
+        public   string    Name  => m_Options.Name;
+        public   int       Order => m_Options.Priority;
+        public   int       Index { get; private set; }
+
 
         // =======================================================================
-        private sealed class OrderComparer : IComparer<BusWrapper>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Invoke<TEvent, TInvoker>(in TEvent e, in TInvoker invoker) where TInvoker : IEventInvoker
         {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public int Compare(BusWrapper x, BusWrapper y)
+            if (IsActive == false)
+                return;
+#if  DEBUG
+            Bus.Send(in e, in invoker);
+#else
+            try
             {
-                return x.Order - y.Order;
+                Bus.Send(in e, in invoker);
             }
-        }
-
-        // =======================================================================
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public BusWrapper(in IEventBus bus)
-        {
-            Setup(bus);
+            catch (Exception exception)
+            {
+                UnityEngine.Debug.LogError($"{this}; Exception: {exception}");
+            }
+#endif
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Setup(in IEventBus bus)
+        public SubscriberBusWrapper(in IEventBus bus, int index)
         {
+            Setup(bus, index);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Setup(in IEventBus bus, int index)
+        {
+            Index    = index;
             IsActive = true;
             Bus      = bus;
             m_Options = bus as ISubscriberOptions ?? Extensions.s_DefaultSubscriberOptions;
@@ -45,7 +54,7 @@ namespace UnityEventBus
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override bool Equals(object obj)
         {
-            return Bus == ((BusWrapper)obj).Bus;
+            return Bus == ((SubscriberBusWrapper)obj).Bus;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -64,16 +73,16 @@ namespace UnityEventBus
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static BusWrapper Create(in IEventBus bus)
+        public static SubscriberBusWrapper Create(in IEventBus bus, int index)
         {
             if (s_WrappersPool.Count > 0)
             {
                 var wrapper = s_WrappersPool.Pop();
-                wrapper.Setup(in bus);
+                wrapper.Setup(in bus, index);
                 return wrapper;
             }
             else
-                return new BusWrapper(in bus);
+                return new SubscriberBusWrapper(in bus, index);
         }
 
         public override string ToString()

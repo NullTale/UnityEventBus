@@ -4,15 +4,13 @@ using System.Collections.Generic;
 namespace UnityEventBus
 {
     /// <summary> Event messages receiver interface </summary>
-    public interface IEventBus
+    public interface IEventBus : ISubscriber
     {
         void Send<TEvent, TInvoker>(in TEvent e, in TInvoker invoker) 
             where TInvoker : IEventInvoker;
         
         void Subscribe(ISubscriber subscriber);
         void UnSubscribe(ISubscriber subscriber);
-        void Subscribe(IEventBus bus);
-        void UnSubscribe(IEventBus bus);
     }
 
     /// <summary> Implementation </summary>
@@ -21,10 +19,10 @@ namespace UnityEventBus
         void Send<TEvent, TInvoker>(in TEvent e, in TInvoker invoker)
             where TInvoker : IEventInvoker;
 
+        void Subscribe(ISubscriber subscriber);
+        void UnSubscribe(ISubscriber subscriber);
+
         void Subscribe(SubscriberWrapper subscriber);
-        void UnSubscribe(SubscriberWrapper subscriber);
-        void Subscribe(IEventBus bus);
-        void UnSubscribe(IEventBus bus);
 
         IEnumerable<object> GetSubscribers();
     }
@@ -58,5 +56,13 @@ namespace UnityEventBus
         string      Name { get; }
         /// <summary> Order in listeners queue, lower first, same order listeners will be added at the back of the ordered stack </summary>
         int         Priority { get; }
+    }
+
+    internal interface ISubscriberWrapper
+    {
+        int  Order    { get; }
+        int  Index    { get; }
+
+        void Invoke<TEvent, TInvoker>(in TEvent e, in TInvoker invoker) where TInvoker : IEventInvoker;
     }
 }

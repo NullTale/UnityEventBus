@@ -5,7 +5,7 @@ using UnityEngine;
 namespace UnityEventBus
 {
     /// <summary>
-    /// MonoBehaviour event bus, if implements the ISubscriber interface, subscribes it to itself
+    /// MonoBehaviour event bus
     /// </summary>
     public class EventBus : EventBusBase, ISubscriberOptions
     {
@@ -69,25 +69,19 @@ namespace UnityEventBus
         }
 
         // =======================================================================
-        protected virtual void Awake()
+        protected override void Awake()
         {
+            base.Awake();
             _buildSubscriptionList();
         }
 
         protected virtual void OnEnable()
         {
-            // if implements subscriber interface manage self
-            if (this is ISubscriber el)
-                Subscribe(el);
-
             _connectBus();
         }
 
         protected virtual void OnDisable()
         {
-            if (this is ISubscriber el)
-                UnSubscribe(el);
-
             _disconnectBus();
         }
 

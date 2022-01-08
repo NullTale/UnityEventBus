@@ -306,6 +306,46 @@ public class Logic
         Assert.AreEqual(2, listener3.CounterIn);
         Assert.AreEqual(3, listener0.CounterIn);
     }
+    
+    [Test]
+    public void Bus_Listeners_Priority()
+    {
+        _clear();
+
+        var bus0 = _createBus(null, -100);
+        var bus1 = _createBus(null, 0);
+        var bus2 = _createBus(null, 0);
+        var bus3 = _createBus(null, 100);
+
+        bus1.SubscribeTo = EventBus.SubscriptionTarget.Global;
+
+        var listener0 = _createSubscriber<PriorityListener>(null, -150, Subscriber.SubscriptionTarget.Global);
+        var listener1 = _createSubscriber<PriorityListener>(null, 0, Subscriber.SubscriptionTarget.Global);
+        var listener2 = _createSubscriber<PriorityListener>(null, 0, Subscriber.SubscriptionTarget.Global);
+        var listener3 = _createSubscriber<PriorityListener>(null, 50, Subscriber.SubscriptionTarget.Global);
+
+        var busListener0 = _createSubscriber<PriorityListener>(bus0.transform, 0, Subscriber.SubscriptionTarget.FirstParent);
+        var busListener1 = _createSubscriber<PriorityListener>(bus1.transform, 0, Subscriber.SubscriptionTarget.FirstParent);
+        var busListener2 = _createSubscriber<PriorityListener>(bus2.transform, 0, Subscriber.SubscriptionTarget.FirstParent);
+        var busListener3 = _createSubscriber<PriorityListener>(bus3.transform, 0, Subscriber.SubscriptionTarget.FirstParent);
+
+        bus3.SubscribeTo = EventBus.SubscriptionTarget.Global;
+        bus2.SubscribeTo = EventBus.SubscriptionTarget.Global;
+        bus0.SubscribeTo = EventBus.SubscriptionTarget.Global;
+
+        GlobalBus.Send(new IntRef() { Counter = 0 });
+
+        Assert.AreEqual(0, listener0.CounterIn);
+        Assert.AreEqual(1, busListener0.CounterIn);
+        Assert.AreEqual(2, busListener1.CounterIn);
+        Assert.AreEqual(3, listener1.CounterIn);
+        Assert.AreEqual(4, listener2.CounterIn);
+        Assert.AreEqual(5, busListener2.CounterIn);
+        Assert.AreEqual(6, listener3.CounterIn);
+        Assert.AreEqual(7, busListener3.CounterIn);
+
+        GlobalBus.Send(k_ExpectedString);
+    }
 
     
     public class EventListener : Subscriber, 
@@ -436,7 +476,7 @@ public class Logic
         listenerB.SubscribeTo = Subscriber.SubscriptionTarget.Global;
         listenerC.SubscribeTo = Subscriber.SubscriptionTarget.Global;
 
-        GlobalBus.Send(k_ExpectedString, s => s == listenerA);
+        GlobalBus.Send(k_ExpectedString, s => ReferenceEquals(s, listenerA));
 
         Assert.AreEqual(listenerA.StringIn, k_ExpectedString);
         Assert.AreEqual(listenerB.StringIn, string.Empty);

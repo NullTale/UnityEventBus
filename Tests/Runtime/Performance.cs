@@ -19,6 +19,8 @@ public class Performance
     [Test, Performance]
     public void Send_String()
     {
+        Logic._clear();
+
         var sub = Logic._createSubscriber<StringListener>();
         sub.SubscribeTo = Subscriber.SubscriptionTarget.Global;
 
@@ -45,6 +47,8 @@ public class Performance
     [Test, Performance]
     public void Send_Event()
     {
+        Logic._clear();
+
         var sub = Logic._createSubscriber<EventStringListener>();
         sub.SubscribeTo = Subscriber.SubscriptionTarget.Global;
 
@@ -77,8 +81,35 @@ public class Performance
     [Test, Performance]
     public void Send_Action()
     {
-        var sub = Logic._createSubscriber<ActionHandle>();
-        sub.SubscribeTo = Subscriber.SubscriptionTarget.Global;
+        Logic._clear();
+
+        var listener1 = Logic._createSubscriber<ActionHandle>();
+        listener1.SubscribeTo = Subscriber.SubscriptionTarget.Global;
+
+        Measure.Method(() =>
+               {
+                   GlobalBus.SendAction<IActionHandle>(n => n.Do());
+               })
+               .IterationsPerMeasurement(10000)
+               .MeasurementCount(10)
+               .GC()
+               .Run();
+    }
+
+    [Test, Performance]
+    public void Send_Action_Complex()
+    {
+        Logic._clear();
+
+        var sub1 = Logic._createSubscriber<ActionHandle>(priority:-1);
+        sub1.SubscribeTo = Subscriber.SubscriptionTarget.Global;
+        var sub2 = Logic._createSubscriber<ActionHandle>();
+        sub2.SubscribeTo = Subscriber.SubscriptionTarget.Global;
+
+        var bus1 = Logic._createBus(priority:-2);
+        bus1.SubscribeTo = EventBus.SubscriptionTarget.Global;
+        var bus2 = Logic._createBus();
+        bus2.SubscribeTo = EventBus.SubscriptionTarget.Global;
 
         Measure.Method(() =>
                {
@@ -103,6 +134,8 @@ public class Performance
     [Test, Performance]
     public void Send_Request()
     {
+        Logic._clear();
+
         var sub = Logic._createSubscriber<RequestListener>();
         sub.SubscribeTo = Subscriber.SubscriptionTarget.Global;
 
@@ -119,6 +152,8 @@ public class Performance
     [Test, Performance]
     public void Subscribe()
     {
+        Logic._clear();
+
         var listeners = Enumerable
                         .Repeat<Func<Subscriber>>(() => Logic._createSubscriber<EventStringListener>(), 20)
                         .Select(n => n.Invoke())

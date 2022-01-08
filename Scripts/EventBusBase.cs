@@ -4,13 +4,19 @@ using UnityEngine;
 namespace UnityEventBus
 {
     /// <summary>
-    /// EventBus MonoBehaviour class, without auto subscription logic
+    /// EventBus MonoBehaviour class
     /// </summary>
     public class EventBusBase : MonoBehaviour, IEventBus
     {
         private IEventBusImpl m_Impl = new EventBusImpl();
 
         // =======================================================================
+        protected virtual void Awake()
+        {
+            foreach (var sub in this.ExtractWrappers())
+                m_Impl.Subscribe(sub);
+        }
+
         public void Send<TEvent, TInvoker>(in TEvent e, in TInvoker invoker) where TInvoker : IEventInvoker
         {
             m_Impl.Send(in e, in invoker);
@@ -19,14 +25,12 @@ namespace UnityEventBus
         public void Subscribe(ISubscriber subscriber)
         {
             // add listeners to the bus
-            foreach (var wrapper in subscriber.ExtractWrappers())
-                m_Impl.Subscribe(wrapper);
+            m_Impl.Subscribe(subscriber);
         }
 
         public void UnSubscribe(ISubscriber subscriber)
         {
-            foreach (var wrapper in subscriber.ExtractWrappers())
-                m_Impl.UnSubscribe(wrapper);
+            m_Impl.UnSubscribe(subscriber);
         }
 
         public void Subscribe(IEventBus bus)

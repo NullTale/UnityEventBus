@@ -95,7 +95,7 @@ public class SimpleListener : MonoBehaviour, IListener<string>, ISubscriberOptio
 ## Event Bus
 To create a local bus, you need to inherit from the `EventBusBase` class.
 
-> Note: Event bus can subscribe to the other buses like a listener, using Subscribe and UnSubscribe methods. Busses always triggers last.
+> Note: Event bus can subscribe to the other buses like a listener, using Subscribe and UnSubscribe methods.
 
 ```c#
 using UnityEngine;

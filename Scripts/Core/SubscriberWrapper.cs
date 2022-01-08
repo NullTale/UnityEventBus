@@ -7,31 +7,40 @@ namespace UnityEventBus
     /// <summary>
     /// Subscriber container, helper class
     /// </summary>
-    internal sealed class SubscriberWrapper : IDisposable
+    internal sealed class SubscriberWrapper : IDisposable, ISubscriberWrapper
     {
         internal static Stack<SubscriberWrapper> s_WrappersPool = new Stack<SubscriberWrapper>(512);
 
-        public static readonly IComparer<SubscriberWrapper> k_OrderComparer = new OrderComparer();
-
         private ISubscriberOptions m_Options;
 
-        internal bool          IsActive;
-        public   Type          Key;
-        public   ISubscriber   Subscriber;
-        public   string        Name     => m_Options.Name;
-        public   int           Order    => m_Options.Priority;
+        internal bool        IsActive;
+        public   Type        Key;
+        public   ISubscriber Subscriber;
+        public   string      Name  => m_Options.Name;
+        public   int         Order => m_Options.Priority;
+        public   int         Index { get; set; }
 
         // =======================================================================
-        private sealed class OrderComparer : IComparer<SubscriberWrapper>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Invoke<TEvent, TInvoker>(in TEvent e, in TInvoker invoker) where TInvoker : IEventInvoker
         {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public int Compare(SubscriberWrapper x, SubscriberWrapper y)
+            if (IsActive == false)
+                return;
+
+#if  DEBUG
+            invoker.Invoke(in e, in Subscriber);
+#else
+            try
             {
-                return x.Order - y.Order;
+                invoker.Invoke(in e, in Subscriber);
             }
+            catch (Exception exception)
+            {
+                UnityEngine.Debug.LogError($"{this}; Exception: {exception}");
+            }
+#endif
         }
 
-        // =======================================================================
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public SubscriberWrapper(ISubscriber listener, Type type)
         {

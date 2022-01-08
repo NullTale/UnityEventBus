@@ -149,16 +149,6 @@ namespace UnityEventBus
             UnSubscribe(subscriber);
         }
 
-        void IEventBus.Subscribe(IEventBus bus)
-        {
-            Subscribe(bus);
-        }
-
-        void IEventBus.UnSubscribe(IEventBus bus)
-        {
-            UnSubscribe(bus);
-        }
-
         // =======================================================================
         /// <summary> Create and initialize EventSystem singleton game object, if singleton already created nothing will happen </summary>
         public static void Create(bool collectClasses, bool collectFunctions)
@@ -193,13 +183,7 @@ namespace UnityEventBus
 
         public static void Subscribe(ISubscriber subscriber)
 	    {
-            foreach (var wrapper in subscriber.ExtractWrappers())
-                Instance.m_Impl.Subscribe(wrapper);
-        }
-
-        public static void Subscribe(IEventBus bus)
-        {
-            Instance.m_Impl.Subscribe(bus);
+            Instance.m_Impl.Subscribe(subscriber);
         }
 
         public static void UnSubscribe(ISubscriber subscriber)
@@ -208,18 +192,8 @@ namespace UnityEventBus
             if (s_Instance == null)
                 return;
 #endif
-            foreach (var wrapper in subscriber.ExtractWrappers())
-		        Instance.m_Impl.UnSubscribe(wrapper);
+            Instance.m_Impl.UnSubscribe(subscriber);
 	    }
-        
-        public static void UnSubscribe(IEventBus bus)
-        {
-#if UNITY_EDITOR
-            if (s_Instance == null)
-                return;
-#endif
-            Instance.m_Impl.UnSubscribe(bus);
-        }
         
         // =======================================================================
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
