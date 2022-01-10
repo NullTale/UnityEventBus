@@ -15,18 +15,19 @@ public class Logic
     static object k_ExpectedObject = new object();
 
     // =======================================================================
-    public static EventBus _createBus(Transform root = null, int priority = 0)
+    public static EventBus _createBus(Transform root = null, int priority = 0, EventBus.SubscriptionTarget subscribeTo = EventBus.SubscriptionTarget.None)
     {
         var go = new GameObject("Bus");
         go.transform.SetParent(root, false);
 
         var result = go.AddComponent<EventBus>();
         result.Priority = priority;
+        result.SubscribeTo = subscribeTo;
 
         return result;
     }
 
-    public static TSubscriber _createSubscriber<TSubscriber>(Transform root = null, int priority = 0, Subscriber.SubscriptionTarget subscriptionTarget = Subscriber.SubscriptionTarget.None) 
+    public static TSubscriber _createSubscriber<TSubscriber>(Transform root = null, int priority = 0, Subscriber.SubscriptionTarget subscribeTo = Subscriber.SubscriptionTarget.None) 
         where TSubscriber : Subscriber
     {
         var go = new GameObject("Listener");
@@ -34,7 +35,7 @@ public class Logic
 
         var result = go.AddComponent<TSubscriber>();
         result.Priority = priority;
-        result.SubscribeTo = subscriptionTarget;
+        result.SubscribeTo = subscribeTo;
 
         return result;
     }

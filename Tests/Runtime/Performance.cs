@@ -21,8 +21,7 @@ public class Performance
     {
         Logic._clear();
 
-        var sub = Logic._createSubscriber<StringListener>();
-        sub.SubscribeTo = Subscriber.SubscriptionTarget.Global;
+        var sub = Logic._createSubscriber<StringListener>(subscribeTo:Subscriber.SubscriptionTarget.Global);
 
         Measure.Method(() =>
                {
@@ -49,8 +48,7 @@ public class Performance
     {
         Logic._clear();
 
-        var sub = Logic._createSubscriber<EventStringListener>();
-        sub.SubscribeTo = Subscriber.SubscriptionTarget.Global;
+        var sub = Logic._createSubscriber<EventStringListener>(subscribeTo:Subscriber.SubscriptionTarget.Global);
 
         Measure.Method(() =>
                {
@@ -83,8 +81,7 @@ public class Performance
     {
         Logic._clear();
 
-        var listener1 = Logic._createSubscriber<ActionHandle>();
-        listener1.SubscribeTo = Subscriber.SubscriptionTarget.Global;
+        var sub1 = Logic._createSubscriber<ActionHandle>(subscribeTo:Subscriber.SubscriptionTarget.Global);
 
         Measure.Method(() =>
                {
@@ -101,15 +98,11 @@ public class Performance
     {
         Logic._clear();
 
-        var sub1 = Logic._createSubscriber<ActionHandle>(priority:-1);
-        sub1.SubscribeTo = Subscriber.SubscriptionTarget.Global;
-        var sub2 = Logic._createSubscriber<ActionHandle>();
-        sub2.SubscribeTo = Subscriber.SubscriptionTarget.Global;
+        var sub1 = Logic._createSubscriber<ActionHandle>(priority:-1, subscribeTo:Subscriber.SubscriptionTarget.Global);
+        var sub2 = Logic._createSubscriber<ActionHandle>(subscribeTo:Subscriber.SubscriptionTarget.Global);
 
-        var bus1 = Logic._createBus(priority:-2);
-        bus1.SubscribeTo = EventBus.SubscriptionTarget.Global;
-        var bus2 = Logic._createBus();
-        bus2.SubscribeTo = EventBus.SubscriptionTarget.Global;
+        var bus1 = Logic._createBus(priority: -2, subscribeTo:EventBus.SubscriptionTarget.Global);
+        var bus2 = Logic._createBus(subscribeTo:EventBus.SubscriptionTarget.Global);
 
         Measure.Method(() =>
                {
@@ -136,8 +129,7 @@ public class Performance
     {
         Logic._clear();
 
-        var sub = Logic._createSubscriber<RequestListener>();
-        sub.SubscribeTo = Subscriber.SubscriptionTarget.Global;
+        var sub = Logic._createSubscriber<RequestListener>(subscribeTo:Subscriber.SubscriptionTarget.Global);
 
         Measure.Method(() =>
                {

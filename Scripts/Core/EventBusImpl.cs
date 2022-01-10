@@ -15,8 +15,6 @@ namespace UnityEventBus
     {
         private const int k_DefaultSetSize = 4;
 
-        internal static Stack<WrappersSet> s_WrappersSetPool = new Stack<WrappersSet>(128);
-
         public static readonly IComparer<ISubscriberWrapper> k_OrderComparer = new SubscriberWrapperComparer();
 
         private Dictionary<Type, SortedCollection<SubscriberWrapper>> m_Subscribers = new Dictionary<Type, SortedCollection<SubscriberWrapper>>();
@@ -24,107 +22,66 @@ namespace UnityEventBus
         private int                                                   m_AddIndex;
 
         // =======================================================================
-        internal class WrappersSet : IEnumerable<ISubscriberWrapper>
-        {
-            public ISubscriberWrapper[]  m_Data = Array.Empty<ISubscriberWrapper>();
-
-            // =======================================================================
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public void ToStack()
-            {
-                Array.Clear(m_Data, 0, m_Data.Length);
-                s_WrappersSetPool.Push(this);
-            }
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public void Init(IReadOnlyList<ISubscriberWrapper> subs, IReadOnlyList<ISubscriberWrapper> buses)
-            {
-                var busesCount = buses.Count;
-                var subsCount  = subs.Count;
-                var size       = subsCount + busesCount;
-
-                Array.Resize(ref m_Data, size);
-
-                var subsIndex = 0;
-                var busesIndex = 0;
-                var n = 0;
-
-                while (true)
-                {
-                    if (busesIndex == busesCount)
-                    {
-                        while (subsIndex != subsCount)
-                            m_Data[n ++] = subs[subsIndex ++];
-
-                        return;
-                    }
-
-                    var bus = buses[busesIndex ++];
-
-                    // has bus, insert listeners
-                    while (true)
-                    {
-                        if (subsIndex == subsCount)
-                        {
-                            m_Data[n ++] = bus;
-                            while (busesIndex != busesCount)
-                                m_Data[n ++] = buses[busesIndex ++];
-
-                            return;
-                        }
-
-                        var sub = subs[subsIndex];
-
-                        if (sub.Order == bus.Order ? sub.Index < bus.Index : sub.Order <= bus.Order)
-                            m_Data[n ++] = sub;
-                        else
-                        {
-                            m_Data[n ++] = bus;
-                            break;
-                        }
-
-                        subsIndex ++;
-                    }
-                }
-            }
-
-            public IEnumerator<ISubscriberWrapper> GetEnumerator()
-            {
-                return ((IEnumerable<ISubscriberWrapper>)m_Data).GetEnumerator();
-            }
-
-            IEnumerator IEnumerable.GetEnumerator()
-            {
-                return GetEnumerator();
-            }
-        }
-
-        // =======================================================================
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Send<TEvent, TInvoker>(in TEvent e, in TInvoker invoker)
             where TInvoker : IEventInvoker
         {
-            var hasListeners = false;
-            var hasBusses = m_Buses.Count > 0;
-
-            if (m_Subscribers.TryGetValue(typeof(TEvent), out var listeners) && listeners.Count > 0)
-                hasListeners = true;
+            var hasListeners = m_Subscribers.TryGetValue(typeof(TEvent), out var listeners) && listeners.Count > 0;
+            var hasBusses    = m_Buses.Count > 0;
             
             if (hasListeners && hasBusses)
             {
-                var subs = s_WrappersSetPool.Count > 0 ? s_WrappersSetPool.Pop() : new WrappersSet();
-                subs.Init(listeners.m_Collection, m_Buses.m_Collection);
+                var buses = m_Buses.m_Collection.ToArray();
+                var subs = listeners.m_Collection.ToArray();
 
-                foreach (var wrapper in subs)
-                    wrapper.Invoke(in e, in invoker);
+                var busIndex = 0;
+                var subIndex = 0;
 
-                subs.ToStack();
+                var bus = buses[0];
+                var sub = subs[0];
+
+                while (true)
+                {
+                    if (sub.Order == bus.Order ? sub.Index < bus.Index : sub.Order < bus.Order)
+                    {
+                        // invoke listener, move next, if no more listeners invoke remaining buses
+                        sub.Invoke(in e, in invoker);
+                        if (++ subIndex >= subs.Length)
+                        {
+                            bus.Invoke(in e, in invoker);
+                            while (++ busIndex < buses.Length)
+                            {
+                                buses[busIndex].Invoke(in e, in invoker);
+                            }
+                            break;
+                        }
+
+                        sub = subs[subIndex];
+                    }
+                    else
+                    {
+                        // invoke bus, move next, if no more buses invoke remaining listeners
+                        bus.Invoke(in e, in invoker);
+                        if (++ busIndex >= buses.Length)
+                        {
+                            sub.Invoke(in e, in invoker);
+                            while (++ subIndex < buses.Length)
+                            {
+                                subs[subIndex].Invoke(in e, in invoker);
+                            }
+
+                            break;
+                        }
+
+                        bus = buses[busIndex];
+                    }
+                }
             }
             else if (hasBusses)
-                foreach (var bus in m_Buses.ToArray())
+                foreach (var bus in m_Buses.m_Collection.ToArray())
                     bus.Invoke(in e, in invoker);
             else if (hasListeners)
-                foreach (var bus in listeners.ToArray())
+                foreach (var bus in listeners.m_Collection.ToArray())
                     bus.Invoke(in e, in invoker); 
         }
 
