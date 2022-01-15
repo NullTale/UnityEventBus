@@ -9,11 +9,12 @@ namespace UnityEventBus
         internal static Stack<SubscriberBusWrapper> s_WrappersPool = new Stack<SubscriberBusWrapper>(512);
         private ISubscriberOptions m_Options;
 
-        internal bool      IsActive;
-        public   IEventBus Bus;
-        public   string    Name  => m_Options.Name;
-        public   int       Order => m_Options.Priority;
-        public   int       Index { get; private set; }
+        internal bool        IsActive;
+        public   IEventBus   Bus;
+        public   string      Name   => m_Options.Name;
+        public   ISubscriber Target => Bus;
+        public   int         Order  => m_Options.Priority;
+        public   int         Index  { get; private set; }
 
 
         // =======================================================================

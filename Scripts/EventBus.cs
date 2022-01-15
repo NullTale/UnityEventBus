@@ -30,7 +30,7 @@ namespace UnityEventBus
         }
 
         [SerializeField]
-        private SubscriptionTarget m_SubscribeTo = SubscriptionTarget.None;
+        private SubscriptionTarget m_SubscribeTo = SubscriptionTarget.Global;
         [SerializeField]
         private int                m_Priority;
         private bool               m_Connected;

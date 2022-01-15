@@ -303,7 +303,7 @@ namespace UnityEventBus
         public void LogSubscribers()
         {
             foreach (var subscriber in m_Impl.GetSubscribers())
-                Debug.Log(subscriber);
+                Debug.Log(subscriber, subscriber.Target as MonoBehaviour);
         }
     }
 }

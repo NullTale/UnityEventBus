@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace UnityEventBus
 {
@@ -54,7 +55,7 @@ namespace UnityEventBus
         public void LogSubscribers()
         {
             foreach (var subscriber in m_Impl.GetSubscribers())
-                Debug.Log(subscriber.ToString());
+                Debug.Log(subscriber.ToString(), subscriber.Target as MonoBehaviour);
         }
     }
 }

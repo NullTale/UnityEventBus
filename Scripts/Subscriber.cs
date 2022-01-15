@@ -8,7 +8,7 @@ namespace UnityEventBus
     public abstract class Subscriber : MonoBehaviour, ISubscriber, ISubscriberOptions
     {
         [SerializeField] [Tooltip("Subscription targets")]
-        private SubscriptionTarget m_SubscribeTo = SubscriptionTarget.None;
+        private SubscriptionTarget m_SubscribeTo = SubscriptionTarget.FirstParent;
         [SerializeField] [Tooltip("Listener priority, lowest first, same last")]
         private int                m_Priority;
         private bool               m_Connected;

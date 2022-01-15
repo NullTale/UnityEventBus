@@ -24,7 +24,7 @@ namespace UnityEventBus
 
         void Subscribe(SubscriberWrapper subscriber);
 
-        IEnumerable<object> GetSubscribers();
+        IEnumerable<ISubscriberWrapper> GetSubscribers();
     }
 
     /// <summary> Invokes events on the listener </summary>
@@ -60,8 +60,9 @@ namespace UnityEventBus
 
     internal interface ISubscriberWrapper
     {
-        int  Order    { get; }
-        int  Index    { get; }
+        int         Order  { get; }
+        int         Index  { get; }
+        ISubscriber Target { get; }
 
         void Invoke<TEvent, TInvoker>(in TEvent e, in TInvoker invoker) where TInvoker : IEventInvoker;
     }

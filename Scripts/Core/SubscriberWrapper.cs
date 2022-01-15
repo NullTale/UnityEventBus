@@ -16,9 +16,10 @@ namespace UnityEventBus
         internal bool        IsActive;
         public   Type        Key;
         public   ISubscriber Subscriber;
-        public   string      Name  => m_Options.Name;
-        public   int         Order => m_Options.Priority;
-        public   int         Index { get; set; }
+        public   string      Name   => m_Options.Name;
+        public   ISubscriber Target => Subscriber;
+        public   int         Order  => m_Options.Priority;
+        public   int         Index  { get; set; }
 
         // =======================================================================
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

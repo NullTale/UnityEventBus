@@ -165,9 +165,9 @@ namespace UnityEventBus
             busWrapper.Dispose();
         }
 
-        public IEnumerable<object> GetSubscribers()
+        public IEnumerable<ISubscriberWrapper> GetSubscribers()
         {
-            return m_Subscribers.SelectMany<KeyValuePair<Type, SortedCollection<SubscriberWrapper>>, object>(group => group.Value).Concat(m_Buses);
+            return m_Subscribers.SelectMany<KeyValuePair<Type, SortedCollection<SubscriberWrapper>>, object>(group => group.Value).Concat(m_Buses).OfType<ISubscriberWrapper>();
         }
 
         public void Dispose()
