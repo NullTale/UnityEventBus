@@ -5,7 +5,7 @@ using Object = UnityEngine.Object;
 namespace UnityEventBus
 {
     /// <summary>
-    /// EventBus MonoBehaviour class
+    /// EventBusImpl MonoBehaviour wrapper
     /// </summary>
     public class EventBusBase : MonoBehaviour, IEventBus
     {
