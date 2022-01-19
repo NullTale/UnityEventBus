@@ -8,7 +8,7 @@ namespace UnityEventBus
     public class SignalEmitter : MonoBehaviour
     {
         [SerializeField]
-        private EmitTarget  m_EmmitTo = EmitTarget.Global;
+        private EmitTarget  m_EmitTo = EmitTarget.Global;
         [SerializeField]
         private SignalAsset m_Signal;
 
@@ -24,24 +24,25 @@ namespace UnityEventBus
         }
 
         // =======================================================================
-        public void Invoke(SignalAsset signal = null)
+        public void Invoke() => Invoke(m_Signal);
+        public void Invoke(SignalAsset signal)
         {
             // emit the default signal if the argument is null, do not emit null signals
             signal ??= m_Signal;
             if (signal.IsNull())
                 return;
 
-            if (m_EmmitTo.HasFlag(EmitTarget.Global))
+            if (m_EmitTo.HasFlag(EmitTarget.Global))
                 signal.Rise();
 
-            if (m_EmmitTo.HasFlag(EmitTarget.This))
+            if (m_EmitTo.HasFlag(EmitTarget.This))
                 GetComponent<IEventBus>()?.Send(in m_Signal);
             
-            if (m_EmmitTo.HasFlag(EmitTarget.Parent))
+            if (m_EmitTo.HasFlag(EmitTarget.Parent))
                 transform.parent?.GetComponentInParent<IEventBus>()?.Send(in signal);
             
             // childs can be destroyed throw execution
-            if (m_EmmitTo.HasFlag(EmitTarget.Childs))
+            if (m_EmitTo.HasFlag(EmitTarget.Childs))
                 foreach (var child in GetComponentsInChildren<IEventBus>())
                     child?.Send(in signal);
         }
