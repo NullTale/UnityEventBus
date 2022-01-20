@@ -65,7 +65,7 @@ namespace UnityEventBus
                         if (++ busIndex >= buses.Length)
                         {
                             sub.Invoke(in e, in invoker);
-                            while (++ subIndex < buses.Length)
+                            while (++ subIndex < subs.Length)
                             {
                                 subs[subIndex].Invoke(in e, in invoker);
                             }
