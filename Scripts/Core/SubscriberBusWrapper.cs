@@ -21,8 +21,6 @@ namespace UnityEventBus
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Invoke<TEvent, TInvoker>(in TEvent e, in TInvoker invoker) where TInvoker : IEventInvoker
         {
-            if (IsActive == false)
-                return;
 #if  DEBUG
             Bus.Send(in e, in invoker);
 #else

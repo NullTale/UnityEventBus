@@ -42,6 +42,40 @@ namespace UnityEventBus
 
                 while (true)
                 {
+                    // skip inactive subs without invoking
+                    if (sub.IsActive == false)
+                    {
+                        if (++ subIndex >= subs.Length)
+                        {
+                            bus.Invoke(in e, in invoker);
+                            while (++ busIndex < buses.Length)
+                            {
+                                buses[busIndex].Invoke(in e, in invoker);
+                            }
+                            break;
+                        }
+
+                        sub = subs[subIndex];
+                        continue;
+                    }
+
+                    if (bus.IsActive == false)
+                    {
+                        if (++ busIndex >= buses.Length)
+                        {
+                            sub.Invoke(in e, in invoker);
+                            while (++ subIndex < subs.Length)
+                            {
+                                subs[subIndex].Invoke(in e, in invoker);
+                            }
+
+                            break;
+                        }
+
+                        bus = buses[busIndex];
+                        continue;
+                    }
+
                     if (sub.Order == bus.Order ? sub.Index < bus.Index : sub.Order < bus.Order)
                     {
                         // invoke listener, move next, if no more listeners invoke remaining buses
