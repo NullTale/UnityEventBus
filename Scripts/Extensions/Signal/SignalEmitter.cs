@@ -33,10 +33,10 @@ namespace UnityEventBus
                 return;
 
             if (m_EmitTo.HasFlag(EmitTarget.Global))
-                signal.Rise();
+                signal.Invoke();
 
             if (m_EmitTo.HasFlag(EmitTarget.This))
-                GetComponent<IEventBus>()?.Send(in m_Signal);
+                GetComponent<IEventBus>()?.Send(in signal);
             
             if (m_EmitTo.HasFlag(EmitTarget.Parent))
                 transform.parent?.GetComponentInParent<IEventBus>()?.Send(in signal);
