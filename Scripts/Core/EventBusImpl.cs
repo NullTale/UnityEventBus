@@ -124,10 +124,16 @@ namespace UnityEventBus
             }
             else if (hasBusses)
                 foreach (var bus in m_Buses.m_Collection.ToArray())
-                    bus.Invoke(in e, in invoker);
+                {
+                    if (bus.IsActive)
+                        bus.Invoke(in e, in invoker);
+                }
             else if (hasListeners)
-                foreach (var bus in listeners.m_Collection.ToArray())
-                    bus.Invoke(in e, in invoker); 
+                foreach (var listener in listeners.m_Collection.ToArray())
+                {
+                    if (listener.IsActive)
+                        listener.Invoke(in e, in invoker);
+                }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
