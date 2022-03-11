@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.Timeline;
 using Object = UnityEngine.Object;
 
@@ -15,6 +16,18 @@ namespace UnityEventBus
         {
             GlobalBus.Send(in signal);
         }
+
+#if UNITY_EDITOR
+        [UnityEditor.MenuItem("CONTEXT/SignalAsset/Invoke")]
+        private static void InvokeSignalMenu(UnityEditor.MenuCommand menuCommand)
+        {
+            if (Application.isPlaying == false)
+                return;
+
+            if (menuCommand.context is SignalAsset sa)
+                sa.Invoke();
+        }
+#endif
         
         // questionable
         private static void Subscribe(this SignalAsset signal, Action action, int order)

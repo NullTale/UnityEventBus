@@ -29,6 +29,7 @@ namespace UnityEventBus
             var hasListeners = m_Subscribers.TryGetValue(typeof(TEvent), out var listeners) && listeners.Count > 0;
             var hasBusses    = m_Buses.Count > 0;
             
+            // optimization mess
             if (hasListeners && hasBusses)
             {
                 var buses = m_Buses.m_Collection.ToArray();
@@ -42,15 +43,18 @@ namespace UnityEventBus
 
                 while (true)
                 {
-                    // skip inactive subs without invoking
+                    // skip inactive subs, because the order check might refer to the destroyed object 
                     if (sub.IsActive == false)
                     {
                         if (++ subIndex >= subs.Length)
                         {
-                            bus.Invoke(in e, in invoker);
+                            if (bus.IsActive)
+                                bus.Invoke(in e, in invoker);
                             while (++ busIndex < buses.Length)
                             {
-                                buses[busIndex].Invoke(in e, in invoker);
+                                bus = buses[busIndex];
+                                if (bus.IsActive)
+                                    bus.Invoke(in e, in invoker);
                             }
                             break;
                         }
@@ -63,12 +67,14 @@ namespace UnityEventBus
                     {
                         if (++ busIndex >= buses.Length)
                         {
-                            sub.Invoke(in e, in invoker);
+                            if (sub.IsActive)
+                                sub.Invoke(in e, in invoker);
                             while (++ subIndex < subs.Length)
                             {
-                                subs[subIndex].Invoke(in e, in invoker);
+                                sub = subs[subIndex];
+                                if (sub.IsActive)
+                                    sub.Invoke(in e, in invoker);
                             }
-
                             break;
                         }
 
@@ -82,10 +88,13 @@ namespace UnityEventBus
                         sub.Invoke(in e, in invoker);
                         if (++ subIndex >= subs.Length)
                         {
-                            bus.Invoke(in e, in invoker);
+                            if (bus.IsActive)
+                                bus.Invoke(in e, in invoker);
                             while (++ busIndex < buses.Length)
                             {
-                                buses[busIndex].Invoke(in e, in invoker);
+                                bus = buses[busIndex];
+                                if (bus.IsActive)
+                                    bus.Invoke(in e, in invoker);
                             }
                             break;
                         }
@@ -98,12 +107,14 @@ namespace UnityEventBus
                         bus.Invoke(in e, in invoker);
                         if (++ busIndex >= buses.Length)
                         {
-                            sub.Invoke(in e, in invoker);
+                            if (sub.IsActive)
+                                sub.Invoke(in e, in invoker);
                             while (++ subIndex < subs.Length)
                             {
-                                subs[subIndex].Invoke(in e, in invoker);
+                                sub = subs[subIndex];
+                                if (sub.IsActive)
+                                    sub.Invoke(in e, in invoker);
                             }
-
                             break;
                         }
 
