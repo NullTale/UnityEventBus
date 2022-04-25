@@ -3,8 +3,31 @@
 Designed to be easy to use, extendable and optimized where it's possible.
 
 An EventBus is a mechanism that allows different components to communicate with each other without knowing about each other. A component can send an Event to the EventBus without knowing who will pick it up or how many others will pick it up.
+#### Features
+- interface based
+- listeners priority sorting
+- filtered messaging
+- ability to send functions and messages
+- local buses creation with the ability to subscribe as a listener
+- timeline compatibility
+- expandability
 
+### Minimal usage example
 
+```c#
+// subscriber class definition
+public class SampleListener : Subscriber,
+                                               IListener<GlobalEvent>,   // react on GlobalEvent(Enum) messages
+                                               IDamageTaker,
+                                               IHandle<IDamageTaker>   // provide IDamageTaker interface for invokation
+```
+```c#
+// send enum event to the GlobalBus
+GlobalBus.SendEvent(GlobalEvent.Activate);
+
+// send action event to the GlobalBus
+GlobalBus.SendAction<IDamageTaker>(damageTaker => damageTaker.TakeDamage(1));
+```
 ### Installation
 Through Unity Package Manager git URL: `https://github.com/NullTale/UnityEventBus.git`
 
@@ -20,6 +43,7 @@ Or copy-paste somewhere inside your project Assets folder.
 * [Extentions](#extentions)
 	+ [Action](#action)
 	+ [Event](#event)
+	+ [Signals](#signals)
 	+ [Request](#request)
 
 ## Event Listener
@@ -246,6 +270,16 @@ if (e.TryGetData(out int n, out float f, out Unit unit))
 	// do something with data
 }
 ```
+
+### Signals
+The small extension that allow you to use `Timeline. SignalAsset` as messages in order to.
+React on signals.
+![Menu](https://user-images.githubusercontent.com/1497430/165080026-0a674094-2ea1-4a3d-8c1f-e0c69fba03ef.png)
+Send signals from the director,
+![Director](https://user-images.githubusercontent.com/1497430/165080029-279f5b63-d134-43c3-9385-e5e2f3d3433a.png)
+or through script or MonoBehaviour.
+![SignalEmitter](https://user-images.githubusercontent.com/1497430/165080020-b40a7d6c-342f-42ea-a9bc-af1439776764.png)
+
 
 ### Request
 Request is needed to get permission for something from another subscriber. Request works just like Event, contains key and optional data, but it can be either approved or ignored and is propagated until first approval. It is in fact a usable event with the only difference that you can get the result of its execution. The `SendRequest` method extension is used to send a Request.
