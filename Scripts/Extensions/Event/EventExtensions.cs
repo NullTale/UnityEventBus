@@ -20,6 +20,11 @@ namespace UnityEventBus
             bus.Send<IEvent<TKey>>(new EventData<TKey, object[]>(in key, in data));
         }
 
+        public static void SendEvent<TKey>(this IEventBus bus, in TKey key, Func<ISubscriber, bool> check, params object[] data)
+        {
+            bus.Send<IEvent<TKey>>(new EventData<TKey, object[]>(in key, in data), check);
+        }
+
         public static void SendEvent<TKey>(this IEventBus bus, in Func<ISubscriber, bool> check, in TKey key)
         {
             bus.Send<IEvent<TKey>>(new Event<TKey>(in key), in check);
@@ -180,23 +185,34 @@ namespace UnityEventBus
     
     public sealed partial class GlobalBus
     {
-        
         /// <summary> Send IEvent message </summary>
         public static void SendEvent<TKey>(in TKey key)
         { 
             Instance.SendEvent(in key);
         }
 
-        /// <summary> Send IEventData message </summary>
-        public static void SendEvent<TKey, Data>(in TKey key, in Data data)
+        /// <summary> Send IEventData message with filtration </summary>
+        public static void SendEvent<TKey, TData>(in TKey key, in Func<ISubscriber, bool> check, TData data)
         {
-            Instance.SendEvent(in key, data);
+            Instance.SendEvent(in key, in check, in data);
+        }
+
+        /// <summary> Send IEventData message with filtration </summary>
+        public static void SendEvent<TKey>(in TKey key, in Func<ISubscriber, bool> check, params object[] data)
+        {
+            Instance.SendEvent(in key, in check, data);
+        }
+        
+        /// <summary> Send IEventData message </summary>
+        public static void SendEvent<TKey, TData>(in TKey key, in TData data)
+        {
+            Instance.SendEvent(in key, in data);
         }
 
         /// <summary> Send IEventData message </summary>
         public static void SendEvent<TKey>(in TKey key, params object[] data)
         {
-            Instance.SendEvent(key, data);
+            Instance.SendEvent(in key, in data);
         }
     }
 }
