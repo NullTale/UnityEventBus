@@ -17,16 +17,33 @@ An EventBus is a mechanism that allows different components to communicate with 
 ```c#
 // subscriber class definition
 public class SampleListener : Subscriber,
-                                               IListener<GlobalEvent>,   // react on GlobalEvent(Enum) messages
-                                               IDamageTaker,
-                                               IHandle<IDamageTaker>   // provide IDamageTaker interface for invokation
+                              IListener<GlobalEvent>,          // react on GlobalEvent(Enum) messages
+                              IListener<IEvent<GlobalEvent>>,  // react on IEvent<GlobalEvent> messages
+                              IDamageTaker,
+                              IHandle<IDamageTaker>   	       // provide IDamageTaker interface for invokation
 ```
 ```c#
 // send enum event to the GlobalBus
-GlobalBus.SendEvent(GlobalEvent.Activate);
+GlobalBus.Send(GlobalEvent.Activate);
 
-// send action event to the GlobalBus
+// send IEvent<GlobalEvent> with custom data
+GlobalBus.SendEvent(GlobalEvent.Activate, 1f);
+
+// send action to the GlobalBus
 GlobalBus.SendAction<IDamageTaker>(damageTaker => damageTaker.TakeDamage(1));
+
+// send with filtration
+GlobalBus.Send(GlobalEvent.Activate, sub => sub is Unit);
+```
+```c#
+// none MonoBehaviour subscriber
+public class SampleListenerClass : ISubscriberOptions,  // optional priority and name options
+                                   IListener<GlobalEvent>,
+                                   IDamageTaker,
+                                   IHandle<IDamageTaker>
+{
+    public void Subscribe() => GlobalBus.Subscribe(this);
+    public void UnSubscribe() => GlobalBus.UnSubscribe(this);
 ```
 ### Installation
 Through Unity Package Manager git URL: `https://github.com/NullTale/UnityEventBus.git`
@@ -274,10 +291,15 @@ if (e.TryGetData(out int n, out float f, out Unit unit))
 ### Signals
 The small extension that allow you to use `Timeline. SignalAsset` as messages in order to.
 React on signals.
+
 ![Menu](https://user-images.githubusercontent.com/1497430/165080026-0a674094-2ea1-4a3d-8c1f-e0c69fba03ef.png)
+
 Send signals from the director,
+
 ![Director](https://user-images.githubusercontent.com/1497430/165080029-279f5b63-d134-43c3-9385-e5e2f3d3433a.png)
+
 or through script or MonoBehaviour.
+
 ![SignalEmitter](https://user-images.githubusercontent.com/1497430/165080020-b40a7d6c-342f-42ea-a9bc-af1439776764.png)
 
 
