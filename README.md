@@ -6,10 +6,10 @@ An EventBus is a mechanism that allows different components to communicate with 
 #### Features
 - interface based
 - listeners priority sorting
-- filtered messaging
 - ability to send functions and messages
 - local buses creation with the ability to subscribe as a listener
 - timeline compatibility
+- filtered messaging
 - expandability
 
 ### Minimal usage example
@@ -289,7 +289,8 @@ if (e.TryGetData(out int n, out float f, out Unit unit))
 ```
 
 ### Signals
-The small extension that allow you to use `Timeline. SignalAsset` as messages in order to.
+The small extension that allow you to use `Timeline.SignalAsset` as messages in order to.
+
 React on signals.
 
 ![Menu](https://user-images.githubusercontent.com/1497430/165080026-0a674094-2ea1-4a3d-8c1f-e0c69fba03ef.png)
