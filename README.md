@@ -116,7 +116,7 @@ public class SimpleListener : MonoBehaviour, IListener<string>
         GlobalBus.UnSubscribe(this);
     }
 
-    // react on event
+    // react to an event
     public void React(in string e)
     {
         Debug.Log(e);
@@ -134,9 +134,9 @@ public class SimpleListener : MonoBehaviour, IListener<string>, ISubscriberOptio
 ```
 
 ## Event Bus
-To create a local bus, you need to inherit from the `EventBusBase` class.
+To create a local bus, you need to derive it from the `EventBusBase` class
 
-> Note: Event bus can subscribe to the other buses like a listener, using Subscribe and UnSubscribe methods.
+> Note: Event bus can be subscribed to the other buses like a listener, using Subscribe and UnSubscribe methods.
 
 ```c#
 using UnityEngine;
@@ -153,8 +153,8 @@ public class Unit : EventBusBase
 ```
 
 
-You can also inherit from the `EventBus` class to configure auto-subscription and priority.
-> Note: If  EventBus implements any of the Subscribers interfaces, it automatically subscribes them to itself.
+You can also derive it from the `EventBus` class to configure auto-subscription and priority.
+> Note: If EventBus implements any Subscribers interfaces, they will be automatically subscribed to it.
 
 ```c#
 public class Unit : EventBus
@@ -205,7 +205,7 @@ Event is a message that contains keys and optional data. To send an Event, the `
 using UnityEngine;
 using UnityEventBus;
 
-// unit is EventBus this receives events and propagate them to subscribers
+// unit derived from the EventBus class, he is receives events and propagate them to subscribers
 public class Unit : EventBusBase
 {
     private void Start()
@@ -248,7 +248,7 @@ public class UnitHP : Subscriber,
 {
     public int HP = 2;
 
-    // reacts on UnitEvents
+    // reacts to UnitEvents
     public override void React(in IEvent<UnitEvent> e)
     {
         switch (e.Key)
@@ -291,7 +291,7 @@ if (e.TryGetData(out int n, out float f, out Unit unit))
 ### Signals
 The small extension that allow you to use `Timeline.SignalAsset` as messages in order to.
 
-React on signals.
+React to signals.
 
 ![Menu](https://user-images.githubusercontent.com/1497430/165080026-0a674094-2ea1-4a3d-8c1f-e0c69fba03ef.png)
 
@@ -305,7 +305,7 @@ or through script or MonoBehaviour.
 
 
 ### Request
-Request is needed to get permission for something from another subscriber. Request works just like Event, contains key and optional data, but it can be either approved or ignored and is propagated until first approval. It is in fact a usable event with the only difference that you can get the result of its execution. The `SendRequest` method extension is used to send a Request.
+Request is needed to get permission for something from another subscriber. Request works just like Event, contains key and optional data, but it can be either approved or ignored and he will propagate until first approval. It is in fact a usable event with the only difference that you can get the result of execution. The `SendRequest` method extension is used to send a Request.
 ```c#
 public class Unit : EventBus
 {
