@@ -50,12 +50,20 @@ namespace UnityEventBus
     }
 
     /// <summary> Provides additional options for event listener </summary>
-    public interface ISubscriberOptions
+    public interface ISubscriberOptions : ISubscriberPriority, ISubscriberName
+    {
+    }
+    
+    public interface ISubscriberPriority
+    {
+        /// <summary> Order in listeners queue, lower first, same order listeners will be added at the back of the ordered stack </summary>
+        int         Priority { get; }
+    }
+    
+    public interface ISubscriberName
     {
         /// <summary> Listener id, used in logs </summary>
         string      Name { get; }
-        /// <summary> Order in listeners queue, lower first, same order listeners will be added at the back of the ordered stack </summary>
-        int         Priority { get; }
     }
 
     internal interface ISubscriberWrapper

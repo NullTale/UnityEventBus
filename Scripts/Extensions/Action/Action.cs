@@ -3,14 +3,19 @@ using System.Runtime.CompilerServices;
 
 namespace UnityEventBus
 {
+    public interface IHandle
+    {
+    }
+    
     /// <summary> SendAction target interface </summary>
-    public interface IHandle<THandle> : ISubscriber<IHandleInvoker<THandle>>, ISubscriber
+    public interface IHandle<THandle> : ISubscriber<IHandleInvoker<THandle>>, ISubscriber, IHandle
     {
     }
 
     /// <summary> Invocation interface without generic constraints </summary>
     public interface IHandleInvoker
     {
+        Type Type { get; } 
         void Invoke(ISubscriber listener);
     }
 
@@ -22,6 +27,7 @@ namespace UnityEventBus
     internal class HandleInvoker<THandle> : IHandleInvoker<THandle>
     {
         private Action<THandle> m_Action;
+        public Type Type => typeof(THandle);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Invoke(ISubscriber listener)
@@ -38,5 +44,6 @@ namespace UnityEventBus
         {
             return $"Action({typeof(THandle)})";
         }
+
     }
 }

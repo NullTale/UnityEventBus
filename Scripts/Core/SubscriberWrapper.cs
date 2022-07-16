@@ -7,18 +7,19 @@ namespace UnityEventBus
     /// <summary>
     /// Subscriber container, helper class
     /// </summary>
-    internal sealed class SubscriberWrapper : IDisposable, ISubscriberWrapper
+    public sealed class SubscriberWrapper : IDisposable, ISubscriberWrapper
     {
         internal static Stack<SubscriberWrapper> s_WrappersPool = new Stack<SubscriberWrapper>(512);
 
-        private ISubscriberOptions m_Options;
+        private ISubscriberName m_Name;
+        private ISubscriberPriority m_Priority;
 
         internal bool        IsActive;
         public   Type        Key;
         public   ISubscriber Subscriber;
-        public   string      Name   => m_Options.Name;
+        public   string      Name   => m_Name.Name;
         public   ISubscriber Target => Subscriber;
-        public   int         Order  => m_Options.Priority;
+        public   int         Order  => m_Priority.Priority;
         public   int         Index  { get; set; }
 
         // =======================================================================
@@ -50,7 +51,8 @@ namespace UnityEventBus
         {
             IsActive   = true;
             Subscriber = listener;
-            m_Options  = listener as ISubscriberOptions ?? Extensions.s_DefaultSubscriberOptions;
+            m_Name     = listener as ISubscriberName ?? Extensions.s_DefaultSubscriberName;
+            m_Priority = listener as ISubscriberPriority ?? Extensions.s_DefaultSubscriberPriority;
             Key        = type;
         }
 
@@ -71,7 +73,8 @@ namespace UnityEventBus
         {
             IsActive   = false;
             Subscriber = null;
-            m_Options  = null;
+            m_Name     = null;
+            m_Priority = null;
             s_WrappersPool.Push(this);
         }
         

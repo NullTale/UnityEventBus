@@ -7,9 +7,10 @@ namespace UnityEventBus
 {
     public static class Extensions
     {
-        internal static          Dictionary<Type, Type[]> s_SubscribersTypeCache     = new Dictionary<Type, Type[]>();
-        internal static readonly DefaultSubscriberOptions s_DefaultSubscriberOptions = new DefaultSubscriberOptions();
-        public static readonly   DefaultInvoker           s_DefaultInvoker           = new DefaultInvoker();
+        internal static          Dictionary<Type, Type[]>  s_SubscribersTypeCache      = new Dictionary<Type, Type[]>();
+        internal static readonly DefaultSubscriberName     s_DefaultSubscriberName     = new DefaultSubscriberName();
+        internal static readonly DefaultSubscriberPriority s_DefaultSubscriberPriority = new DefaultSubscriberPriority();
+        public static readonly   DefaultInvoker            s_DefaultInvoker            = new DefaultInvoker();
 
         // =======================================================================
         public class DefaultInvoker : IEventInvoker

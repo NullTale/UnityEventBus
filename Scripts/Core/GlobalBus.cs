@@ -43,6 +43,7 @@ namespace UnityEventBus
         public const string k_DefaultName      = "";
 
         private IEventBusImpl m_Impl;
+        internal IEventBusImpl Impl => m_Impl;
 
         public bool InitOnAwake;
         public bool CollectClasses;
@@ -167,7 +168,7 @@ namespace UnityEventBus
         }
 
         public static void Send<TEvent, TInvoker>(in TEvent e, in TInvoker invoker) where TInvoker : IEventInvoker
-        { 
+        {
             Instance.m_Impl.Send(in e, in invoker);
         }
         

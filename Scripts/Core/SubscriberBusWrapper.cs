@@ -7,13 +7,14 @@ namespace UnityEventBus
     internal sealed class SubscriberBusWrapper : IDisposable, ISubscriberWrapper
     {
         internal static Stack<SubscriberBusWrapper> s_WrappersPool = new Stack<SubscriberBusWrapper>(512);
-        private ISubscriberOptions m_Options;
+        private ISubscriberName m_Name;
+        private ISubscriberPriority m_Priority;
 
         internal bool        IsActive;
         public   IEventBus   Bus;
-        public   string      Name   => m_Options.Name;
+        public   string      Name   => m_Name.Name;
         public   ISubscriber Target => Bus;
-        public   int         Order  => m_Options.Priority;
+        public   int         Order  => m_Priority.Priority;
         public   int         Index  { get; private set; }
 
 
@@ -44,10 +45,11 @@ namespace UnityEventBus
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Setup(in IEventBus bus, int index)
         {
-            Index    = index;
-            IsActive = true;
-            Bus      = bus;
-            m_Options = bus as ISubscriberOptions ?? Extensions.s_DefaultSubscriberOptions;
+            Index      = index;
+            IsActive   = true;
+            Bus        = bus;
+            m_Name     = bus as ISubscriberName ?? Extensions.s_DefaultSubscriberName;
+            m_Priority = bus as ISubscriberPriority ?? Extensions.s_DefaultSubscriberPriority;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -65,9 +67,10 @@ namespace UnityEventBus
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Dispose()
         {
-            IsActive  = false;
-            Bus       = null;
-            m_Options = null;
+            IsActive   = false;
+            Bus        = null;
+            m_Name     = null;
+            m_Priority = null;
             s_WrappersPool.Push(this);
         }
         

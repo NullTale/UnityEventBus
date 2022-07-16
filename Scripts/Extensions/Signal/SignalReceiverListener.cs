@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.Timeline;
-using UnityEventBus.Utils;
 
 namespace UnityEventBus
 {

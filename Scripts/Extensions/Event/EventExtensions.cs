@@ -192,7 +192,7 @@ namespace UnityEventBus
         }
 
         /// <summary> Send IEventData message with filtration </summary>
-        public static void SendEvent<TKey, TData>(in TKey key, in Func<ISubscriber, bool> check, TData data)
+        public static void SendEvent<TKey, TData>(in TKey key, in Func<ISubscriber, bool> check, in TData data)
         {
             Instance.SendEvent(in key, in check, in data);
         }
