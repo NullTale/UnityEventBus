@@ -21,15 +21,15 @@ namespace UnityEventBus
             m_Impl.Send(in e, in invoker);
         }
 
-        public void Subscribe(ISubscriber subscriber)
+        public void Subscribe(ISubscriber sub)
         {
             // add listeners to the bus
-            m_Impl.Subscribe(subscriber);
+            m_Impl.Subscribe(sub);
         }
 
-        public void UnSubscribe(ISubscriber subscriber)
+        public void UnSubscribe(ISubscriber sub)
         {
-            m_Impl.UnSubscribe(subscriber);
+            m_Impl.UnSubscribe(sub);
         }
 
         public void Subscribe(IEventBus bus)

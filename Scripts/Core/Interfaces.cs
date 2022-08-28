@@ -9,20 +9,20 @@ namespace UnityEventBus
         void Send<TEvent, TInvoker>(in TEvent e, in TInvoker invoker) 
             where TInvoker : IEventInvoker;
         
-        void Subscribe(ISubscriber subscriber);
-        void UnSubscribe(ISubscriber subscriber);
+        void Subscribe(ISubscriber sub);
+        void UnSubscribe(ISubscriber sub);
     }
 
     /// <summary> Implementation </summary>
-    internal interface IEventBusImpl : IDisposable
+    public interface IEventBusImpl : IDisposable
     {
         void Send<TEvent, TInvoker>(in TEvent e, in TInvoker invoker)
             where TInvoker : IEventInvoker;
 
-        void Subscribe(ISubscriber subscriber);
-        void UnSubscribe(ISubscriber subscriber);
+        void Subscribe(ISubscriber sub);
+        void UnSubscribe(ISubscriber sub);
 
-        void Subscribe(SubscriberWrapper subscriber);
+        void Subscribe(SubscriberWrapper sub);
 
         IEnumerable<ISubscriberWrapper> GetSubscribers();
     }
@@ -66,7 +66,7 @@ namespace UnityEventBus
         string      Name { get; }
     }
 
-    internal interface ISubscriberWrapper
+    public interface ISubscriberWrapper
     {
         int         Order  { get; }
         int         Index  { get; }

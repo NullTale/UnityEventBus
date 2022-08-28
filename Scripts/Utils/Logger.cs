@@ -45,12 +45,12 @@ namespace UnityEventBus.Utils
                 m_Log.RemoveAt(0);
         }
 
-        public void Subscribe(ISubscriber subscriber)
+        public void Subscribe(ISubscriber sub)
         {
             throw new System.NotImplementedException();
         }
 
-        public void UnSubscribe(ISubscriber subscriber)
+        public void UnSubscribe(ISubscriber sub)
         {
             throw new System.NotImplementedException();
         }

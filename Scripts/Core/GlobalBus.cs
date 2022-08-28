@@ -140,14 +140,14 @@ namespace UnityEventBus
             Send(in e, in invoker);
         }
 
-        void IEventBus.Subscribe(ISubscriber subscriber)
+        void IEventBus.Subscribe(ISubscriber sub)
         {
-            Subscribe(subscriber);
+            Subscribe(sub);
         }
 
-        void IEventBus.UnSubscribe(ISubscriber subscriber)
+        void IEventBus.UnSubscribe(ISubscriber sub)
         {
-            UnSubscribe(subscriber);
+            UnSubscribe(sub);
         }
 
         // =======================================================================
@@ -182,18 +182,18 @@ namespace UnityEventBus
             Instance.Send(in e);
         }
 
-        public static void Subscribe(ISubscriber subscriber)
+        public static void Subscribe(ISubscriber sub)
 	    {
-            Instance.m_Impl.Subscribe(subscriber);
+            Instance.m_Impl.Subscribe(sub);
         }
 
-        public static void UnSubscribe(ISubscriber subscriber)
+        public static void UnSubscribe(ISubscriber sub)
 	    {
 #if UNITY_EDITOR
             if (s_Instance == null)
                 return;
 #endif
-            Instance.m_Impl.UnSubscribe(subscriber);
+            Instance.m_Impl.UnSubscribe(sub);
 	    }
         
         // =======================================================================

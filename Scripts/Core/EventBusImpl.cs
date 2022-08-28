@@ -10,11 +10,11 @@ namespace UnityEventBus
     /// <summary>
     /// EventBus functionality
     /// </summary>
-    internal class EventBusImpl : IEventBusImpl
+    public class EventBusImpl : IEventBusImpl
     {
         private const int k_DefaultSetSize = 4;
 
-        public static readonly IComparer<ISubscriberWrapper> k_OrderComparer = new SubscriberWrapperComparer();
+        private static readonly IComparer<ISubscriberWrapper> k_OrderComparer = new SubscriberWrapperComparer();
 
         private Dictionary<Type, SortedCollection<SubscriberWrapper>> m_Subscribers = new Dictionary<Type, SortedCollection<SubscriberWrapper>>();
         private SortedCollection<SubscriberBusWrapper>                m_Buses       = new SortedCollection<SubscriberBusWrapper>(k_OrderComparer);
@@ -136,41 +136,41 @@ namespace UnityEventBus
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Subscribe(ISubscriber subscriber)
+        public void Subscribe(ISubscriber sub)
         {
-            if (subscriber is IEventBus bus) 
+            if (sub is IEventBus bus) 
                 Subscribe(bus);
             else
-                foreach (var wrapper in subscriber.ExtractWrappers())
+                foreach (var wrapper in sub.ExtractWrappers())
                     Subscribe(wrapper);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void UnSubscribe(ISubscriber subscriber)
+        public void UnSubscribe(ISubscriber sub)
         {
-            if (subscriber is IEventBus bus) 
+            if (sub is IEventBus bus) 
                 UnSubscribe(bus);
             else
-                foreach (var wrapper in subscriber.ExtractWrappers())
+                foreach (var wrapper in sub.ExtractWrappers())
                     UnSubscribe(wrapper);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Subscribe(SubscriberWrapper subscriber)
+        public void Subscribe(SubscriberWrapper sub)
         {
-            if (subscriber == null)
-                throw new ArgumentNullException(nameof(subscriber));
+            if (sub == null)
+                throw new ArgumentNullException(nameof(sub));
 
-            subscriber.Index = m_AddIndex ++;
+            sub.Index = m_AddIndex ++;
 
             // get or create group
-            if (m_Subscribers.TryGetValue(subscriber.Key, out var set) == false)
+            if (m_Subscribers.TryGetValue(sub.Key, out var set) == false)
             {
                 set = new SortedCollection<SubscriberWrapper>(k_OrderComparer, k_DefaultSetSize);
-                m_Subscribers.Add(subscriber.Key, set);
+                m_Subscribers.Add(sub.Key, set);
             }
 
-            set.Add(subscriber);
+            set.Add(sub);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

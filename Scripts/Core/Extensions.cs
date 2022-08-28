@@ -50,7 +50,7 @@ namespace UnityEventBus
             s_DefaultInvoker.Invoke(in e, listener);
         }
 
-        internal static IEnumerable<SubscriberWrapper> ExtractWrappers(this ISubscriber listener)
+        public static IEnumerable<SubscriberWrapper> ExtractWrappers(this ISubscriber listener)
         {
             var listenerType = listener.GetType();
 
