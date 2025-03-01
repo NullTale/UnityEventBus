@@ -42,11 +42,36 @@ public class SampleListenerClass : ISubscriberOptions,  // optional priority and
                                    IDamageTaker,
                                    IHandle<IDamageTaker>
 {
+    // react on sent data
+    public void React(in GlobalEvent e)
+    {
+        if (e == GlobalEvent.GameStart)
+        {
+            // do something
+        }
+    }
+
+    // provide interface for method invocation
+    public void IDamageTaker.Damage(int dmg)
+    {
+        // do something
+    }
+
+    // subscriber extra options
+    public string Name     => name; // name for debugging purposes
+    public int    Priority => 1;    // execution order related to other subscribed listeners
+
+    // subscription methods (bus can be any, in example used global bus singleton)
     public void Subscribe() => GlobalBus.Subscribe(this);
-    public void UnSubscribe() => GlobalBus.UnSubscribe(this);
+    public void Unsubscribe() => GlobalBus.Unsubscribe(this);
+}
+
 ```
 ### Installation
-Through Unity Package Manager git URL: `https://github.com/NullTale/UnityEventBus.git`
+Through Unity Package Manager git URL: 
+```
+https://github.com/NullTale/UnityEventBus.git
+```
 
 ![PackageManager](https://user-images.githubusercontent.com/1497430/123476308-32c6c500-d605-11eb-8eca-9266624ad58b.gif)
 
